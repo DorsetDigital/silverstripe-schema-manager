@@ -4,14 +4,14 @@ namespace DorsetDigital\SchemaManager\Extension;
 
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Assets\Image;
+use SilverStripe\Core\Extension;
 use SilverStripe\Forms\EmailField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TextField;
-use SilverStripe\ORM\DataExtension;
 
-class SiteConfigSchemaExtension extends DataExtension
+class SiteConfigSchemaExtension extends Extension
 {
     private static array $db = [
         'SchemaOrganisationName' => 'Varchar(255)',
