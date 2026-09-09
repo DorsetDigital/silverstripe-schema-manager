@@ -3,6 +3,7 @@
 namespace DorsetDigital\SchemaManager\Control;
 
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
+use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 
 class SchemaRegistry
@@ -35,7 +36,16 @@ class SchemaRegistry
 
     public static function addFAQ(string $question, string $answer, ?string $pageURL = null): void
     {
-        $pageURL = $pageURL ?: Director::absoluteURL(Director::get_current_page());
+        if (!$pageURL) {
+            $page = Director::get_current_page();
+
+            if ($page && method_exists($page, 'AbsoluteLink')) {
+                $pageURL = $page->AbsoluteLink();
+            } else {
+                $pageURL = Director::absoluteURL(Controller::curr()->getRequest()->getURL());
+            }
+        }
+
         $id = rtrim($pageURL, '/') . '/#faq';
 
         if (!isset(self::$entities[$id])) {
