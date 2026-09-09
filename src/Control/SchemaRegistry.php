@@ -2,11 +2,23 @@
 
 namespace DorsetDigital\SchemaManager\Control;
 
+use DorsetDigital\SchemaManager\Model\Schema\Schema;
 use SilverStripe\Control\Director;
 
 class SchemaRegistry
 {
     private static array $entities = [];
+
+    public static function add(Schema $schema): void
+    {
+        $id = $schema->getID();
+
+        if (!$id) {
+            return;
+        }
+
+        self::addEntity($id, $schema->toArray());
+    }
 
     public static function addEntity(string $id, array $data): void
     {
@@ -24,7 +36,7 @@ class SchemaRegistry
     public static function addFAQ(string $question, string $answer, ?string $pageURL = null): void
     {
         $pageURL = $pageURL ?: Director::absoluteURL(Director::get_current_page());
-        $id = rtrim($pageURL, '/') . '#faq';
+        $id = rtrim($pageURL, '/') . '/#faq';
 
         if (!isset(self::$entities[$id])) {
             self::$entities[$id] = [
