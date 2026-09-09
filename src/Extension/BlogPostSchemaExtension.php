@@ -3,9 +3,9 @@
 namespace DorsetDigital\SchemaManager\Extension;
 
 use DorsetDigital\SchemaManager\Model\Schema\BlogPostingSchema;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 
-class BlogPostSchemaExtension extends DataExtension
+class BlogPostSchemaExtension extends Extension
 {
     public function updateSchemaManagerEntities(array &$entities): void
     {
