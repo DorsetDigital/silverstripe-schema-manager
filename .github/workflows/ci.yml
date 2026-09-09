@@ -25,6 +25,12 @@ jobs:
           coverage: none
           tools: composer:v2
 
+      - name: Configure Composer plugins
+        run: |
+          composer config --no-plugins allow-plugins.composer/installers true
+          composer config --no-plugins allow-plugins.silverstripe/recipe-plugin true
+          composer config --no-plugins allow-plugins.silverstripe/vendor-plugin true
+
       - name: Validate Composer configuration
         run: composer validate --strict
 
