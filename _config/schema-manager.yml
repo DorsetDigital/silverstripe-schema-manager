@@ -1,0 +1,10 @@
+---
+Name: schema-manager
+---
+SilverStripe\CMS\Controllers\ContentController:
+  extensions:
+    - DorsetDigital\SchemaManager\Extension\SchemaControllerExtension
+
+SilverStripe\SiteConfig\SiteConfig:
+  extensions:
+    - DorsetDigital\SchemaManager\Extension\SiteConfigSchemaExtension
