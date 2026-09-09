@@ -1,0 +1,6 @@
+---
+Name: schema-manager
+---
+SilverStripe\Control\Controller:
+  extensions:
+    - DorsetDigital\SchemaManager\Extension\SchemaControllerExtension
