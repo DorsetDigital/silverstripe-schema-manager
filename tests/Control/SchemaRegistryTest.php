@@ -3,6 +3,7 @@
 namespace DorsetDigital\SchemaManager\Tests\Control;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\Schema;
 use SilverStripe\Dev\SapphireTest;
 
 class SchemaRegistryTest extends SapphireTest
@@ -25,6 +26,23 @@ class SchemaRegistryTest extends SapphireTest
         $this->assertCount(1, $graph);
         $this->assertSame('Thing', $graph[0]['@type']);
         $this->assertSame('Example', $graph[0]['name']);
+    }
+
+    public function testTypedSchemaCanBeAdded(): void
+    {
+        $schema = new class([
+            '@type' => 'Thing',
+            '@id' => 'https://example.com/#thing',
+            'name' => 'Typed example',
+        ]) extends Schema {
+        };
+
+        SchemaRegistry::add($schema);
+
+        $graph = SchemaRegistry::getGraph();
+
+        $this->assertCount(1, $graph);
+        $this->assertSame('Typed example', $graph[0]['name']);
     }
 
     public function testEntityDataIsMergedById(): void
@@ -58,7 +76,7 @@ class SchemaRegistryTest extends SapphireTest
 
         $this->assertCount(1, $graph);
         $this->assertSame('FAQPage', $graph[0]['@type']);
-        $this->assertSame('https://example.com/faqs#faq', $graph[0]['@id']);
+        $this->assertSame('https://example.com/faqs/#faq', $graph[0]['@id']);
         $this->assertCount(2, $graph[0]['mainEntity']);
         $this->assertSame('Question two?', $graph[0]['mainEntity'][1]['name']);
         $this->assertSame('Answer two.', $graph[0]['mainEntity'][1]['acceptedAnswer']['text']);
