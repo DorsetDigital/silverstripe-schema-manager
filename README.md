@@ -163,9 +163,9 @@ For example:
 
 ```php
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 
-class MyPageSchemaExtension extends DataExtension
+class MyPageSchemaExtension extends Extension
 {
     public function updateSchemaManagerEntities(array &$entities): void
     {
