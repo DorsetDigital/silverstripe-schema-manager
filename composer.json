@@ -21,7 +21,7 @@
         "silverstripe/framework": "^6",
         "silverstripe/cms": "^6",
         "silverstripe/siteconfig": "^6",
-        "silverstripe/assets": "^6",
+        "silverstripe/assets": "^3",
         "silverstripe/asset-admin": "^3"
     },
     "require-dev": {
