@@ -1,0 +1,34 @@
+{
+    "name": "dorsetdigital/silverstripe-schema-manager",
+    "description": "Structured data schema registry and helpers for Silverstripe CMS 6.",
+    "type": "silverstripe-vendormodule",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Dorset Digital",
+            "homepage": "https://github.com/DorsetDigital"
+        }
+    ],
+    "keywords": [
+        "silverstripe",
+        "schema.org",
+        "json-ld",
+        "structured-data",
+        "seo"
+    ],
+    "require": {
+        "php": "^8.3",
+        "silverstripe/framework": "^6"
+    },
+    "autoload": {
+        "psr-4": {
+            "DorsetDigital\\SchemaManager\\": "src/"
+        }
+    },
+    "extra": {
+        "expose": []
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
