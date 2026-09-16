@@ -13,4 +13,6 @@ class SchemaManager
     private static bool $automatic_website_schema = true;
 
     private static bool $automatic_webpage_schema = true;
+
+    private static bool $automatic_breadcrumb_schema = true;
 }
