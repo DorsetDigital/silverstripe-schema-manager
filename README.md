@@ -138,6 +138,58 @@ SchemaRegistry::addFAQ(
 
 Each call appends another `Question` to one `FAQPage` entity for the current page.
 
+## Product and service schema
+
+The module includes generic builders for common `Product` and `Service` entities. They deliberately accept values rather than depending on a particular e-commerce or service module, so project code remains responsible for mapping its own data model onto Schema.org.
+
+A product can be added with:
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\ProductSchema;
+
+$productSchema = ProductSchema::create(
+    $product->AbsoluteLink(),
+    $product->Title,
+    $product->MetaDescription
+)
+    ->setImage($product->Image?->getAbsoluteURL())
+    ->setSKU($product->SKU)
+    ->setBrand($product->Brand)
+    ->setOffer($product->Price, 'GBP', $product->InStock);
+
+SchemaRegistry::add($productSchema);
+```
+
+The product is linked to the automatic `WebPage` entity using `mainEntityOfPage`. `setOffer()` adds a standard Schema.org `Offer` and can include stock availability.
+
+A service follows the same pattern:
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\ServiceSchema;
+
+$serviceSchema = ServiceSchema::create(
+    $service->AbsoluteLink(),
+    $service->Title,
+    $service->MetaDescription
+)
+    ->setAreaServed('United Kingdom');
+
+SchemaRegistry::add($serviceSchema);
+```
+
+Services link to the automatic `WebPage` entity and, by default, use the site's `Organization` entity as their provider. `setProvider()` can override that relationship, and `setOffer()` can add pricing where appropriate.
+
+Both builders inherit `Schema::update()`, so less common Schema.org properties can be added without requiring the module to model every possible product or service use case:
+
+```php
+$productSchema->update([
+    'color' => $product->Colour,
+    'material' => $product->Material,
+]);
+```
+
 ## Optional Silverstripe Blog support
 
 The module does **not** require `silverstripe/blog`.
@@ -257,7 +309,9 @@ src/
     Schema/
       BlogPostingSchema.php
       OrganisationSchema.php
+      ProductSchema.php
       Schema.php
+      ServiceSchema.php
       WebPageSchema.php
       WebsiteSchema.php
   Service/
