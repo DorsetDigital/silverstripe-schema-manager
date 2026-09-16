@@ -51,6 +51,10 @@ class SchemaControllerExtension extends Extension
 
         $page->extend('updateSchemaManagerEntities', $pageEntities);
         $this->registerEntities($pageEntities);
+
+        if ($managerConfig->get('automatic_breadcrumb_schema')) {
+            SchemaRegistry::addBreadCrumbs($page);
+        }
     }
 
     private function registerEntities(array $entities): void
