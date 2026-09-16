@@ -115,6 +115,19 @@ class SchemaRegistryTest extends SapphireTest
         $this->assertStringEndsWith('/about/team/', $graph[0]['itemListElement'][1]['item']);
     }
 
+    public function testSingleBreadcrumbIsNotAdded(): void
+    {
+        $page = SiteTree::create([
+            'Title' => 'About us',
+            'URLSegment' => 'about',
+        ]);
+        $page->write();
+
+        SchemaRegistry::addBreadCrumbs($page);
+
+        $this->assertSame([], SchemaRegistry::getGraph());
+    }
+
     public function testJsonContainsSchemaGraph(): void
     {
         SchemaRegistry::addEntity('https://example.com/#thing', [

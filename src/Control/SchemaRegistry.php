@@ -75,7 +75,7 @@ class SchemaRegistry
     ): void {
         $items = $page->getBreadcrumbItems($maxDepth, $stopAtPageType, $showHidden);
 
-        if (!$items || !$items->count()) {
+        if (!$items || $items->count() < 2) {
             return;
         }
 
@@ -95,7 +95,7 @@ class SchemaRegistry
             ];
         }
 
-        if (!$itemList) {
+        if (count($itemList) < 2) {
             return;
         }
 
