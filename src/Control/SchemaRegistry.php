@@ -47,12 +47,16 @@ class SchemaRegistry
             }
         }
 
-        $id = rtrim($pageURL, '/') . '/#faq';
+        $pageURL = rtrim($pageURL, '/') . '/';
+        $id = $pageURL . '#faq';
 
         if (!isset(self::$entities[$id])) {
             self::$entities[$id] = [
                 '@type' => 'FAQPage',
                 '@id' => $id,
+                'mainEntityOfPage' => [
+                    '@id' => $pageURL . '#webpage',
+                ],
                 'mainEntity' => [],
             ];
         }
