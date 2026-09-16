@@ -11,7 +11,6 @@ use DorsetDigital\SchemaManager\Service\SchemaManager;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Core\Extension;
 use SilverStripe\SiteConfig\SiteConfig;
-use SilverStripe\View\Requirements;
 
 class SchemaControllerExtension extends Extension
 {
@@ -52,17 +51,6 @@ class SchemaControllerExtension extends Extension
 
         $page->extend('updateSchemaManagerEntities', $pageEntities);
         $this->registerEntities($pageEntities);
-
-        $json = SchemaRegistry::getJSON();
-
-        if (!$json) {
-            return;
-        }
-
-        Requirements::insertHeadTags(
-            '<script type="application/ld+json">' . $json . '</script>',
-            'schema-manager-jsonld'
-        );
     }
 
     private function registerEntities(array $entities): void
