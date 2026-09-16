@@ -67,26 +67,56 @@ class JobPostingSchema extends Schema
         return $this;
     }
 
-    public function setJobLocation(array|string|null $location): static
-    {
-        if ($location) {
-            $this->data['jobLocation'] = is_array($location)
-                ? $location
-                : [
-                    '@type' => 'Place',
-                    'address' => $location,
-                ];
+    public function setJobLocation(
+        ?string $locality = null,
+        ?string $region = null,
+        ?string $country = null,
+        ?string $streetAddress = null,
+        ?string $postalCode = null
+    ): static {
+        $address = [
+            '@type' => 'PostalAddress',
+        ];
+
+        if ($streetAddress) {
+            $address['streetAddress'] = $streetAddress;
+        }
+
+        if ($locality) {
+            $address['addressLocality'] = $locality;
+        }
+
+        if ($region) {
+            $address['addressRegion'] = $region;
+        }
+
+        if ($postalCode) {
+            $address['postalCode'] = $postalCode;
+        }
+
+        if ($country) {
+            $address['addressCountry'] = $country;
+        }
+
+        if (count($address) > 1) {
+            $this->data['jobLocation'] = [
+                '@type' => 'Place',
+                'address' => $address,
+            ];
         }
 
         return $this;
     }
 
-    public function setRemote(bool $remote = true): static
+    public function setRemote(?string $country = null): static
     {
-        if ($remote) {
-            $this->data['jobLocationType'] = 'TELECOMMUTE';
-        } else {
-            unset($this->data['jobLocationType']);
+        $this->data['jobLocationType'] = 'TELECOMMUTE';
+
+        if ($country) {
+            $this->data['applicantLocationRequirements'] = [
+                '@type' => 'Country',
+                'name' => $country,
+            ];
         }
 
         return $this;
@@ -95,23 +125,40 @@ class JobPostingSchema extends Schema
     public function setBaseSalary(
         float|int|string $value,
         string $currency,
-        ?string $unitText = null
+        string $unit = 'YEAR'
     ): static {
-        $salary = [
+        $this->data['baseSalary'] = [
             '@type' => 'MonetaryAmount',
             'currency' => $currency,
-            'value' => $value,
-        ];
-
-        if ($unitText) {
-            $salary['value'] = [
+            'value' => [
                 '@type' => 'QuantitativeValue',
                 'value' => $value,
-                'unitText' => $unitText,
-            ];
-        }
+                'unitText' => $unit,
+            ],
+        ];
 
-        $this->data['baseSalary'] = $salary;
+        $this->data['salaryCurrency'] = $currency;
+
+        return $this;
+    }
+
+    public function setBaseSalaryRange(
+        float|int|string $minValue,
+        float|int|string $maxValue,
+        string $currency,
+        string $unit = 'YEAR'
+    ): static {
+        $this->data['baseSalary'] = [
+            '@type' => 'MonetaryAmount',
+            'currency' => $currency,
+            'value' => [
+                '@type' => 'QuantitativeValue',
+                'minValue' => $minValue,
+                'maxValue' => $maxValue,
+                'unitText' => $unit,
+            ],
+        ];
+
         $this->data['salaryCurrency'] = $currency;
 
         return $this;
