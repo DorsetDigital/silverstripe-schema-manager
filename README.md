@@ -22,7 +22,7 @@ Until then, add the GitHub repository as a Composer VCS repository and require `
 
 ## What is automatic?
 
-By default Schema Manager adds three linked entities to normal `ContentController` page requests:
+By default Schema Manager adds site, page and breadcrumb schema to normal `ContentController` page requests:
 
 ```text
 Organization
@@ -30,6 +30,8 @@ Organization
 WebSite
     ↑ isPartOf
 WebPage
+
+BreadcrumbList
 ```
 
 Stable entity IDs are based on the canonical site/page URLs:
@@ -38,6 +40,7 @@ Stable entity IDs are based on the canonical site/page URLs:
 https://example.com/#organisation
 https://example.com/#website
 https://example.com/about/#webpage
+https://example.com/about/#breadcrumb
 ```
 
 The JSON-LD is inserted automatically with Silverstripe Requirements. No template change is required.
@@ -63,6 +66,32 @@ Every normal `SiteTree` page receives a `WebPage` entity containing its URL, tit
 
 No page extension needs to be configured for this behaviour.
 
+## Automatic breadcrumb schema
+
+Every normal `SiteTree` page also receives a Schema.org `BreadcrumbList` built from Silverstripe's standard `getBreadcrumbItems()` functionality.
+
+The breadcrumb entries use `MenuTitle` where available, falling back to `Title`, and include the absolute page URL and list position expected by Schema.org.
+
+Automatic breadcrumb schema can be disabled independently while leaving the public helper available for manual use.
+
+```yaml
+DorsetDigital\SchemaManager\Service\SchemaManager:
+  automatic_breadcrumb_schema: false
+```
+
+A project can then register breadcrumbs itself, for example when it needs different Silverstripe breadcrumb options:
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+
+SchemaRegistry::addBreadCrumbs(
+    $this,
+    maxDepth: 20,
+    stopAtPageType: false,
+    showHidden: false
+);
+```
+
 ## Configuration
 
 Each automatic layer can be disabled independently in project YAML:
@@ -72,6 +101,7 @@ DorsetDigital\SchemaManager\Service\SchemaManager:
   automatic_organisation_schema: true
   automatic_website_schema: true
   automatic_webpage_schema: true
+  automatic_breadcrumb_schema: true
 ```
 
 For example, a project already supplying its own organisation schema can set:
@@ -190,6 +220,10 @@ Registers a raw Schema.org entity. Existing data under the same ID is recursivel
 ### `SchemaRegistry::addFAQ(string $question, string $answer, ?string $pageURL = null)`
 
 Adds a question and accepted answer to the current page's `FAQPage` entity.
+
+### `SchemaRegistry::addBreadCrumbs(SiteTree $page, int $maxDepth = 20, bool|string $stopAtPageType = false, bool $showHidden = false)`
+
+Adds a `BreadcrumbList` using Silverstripe's standard breadcrumb hierarchy. The method remains available when automatic breadcrumb schema is disabled.
 
 ### `SchemaRegistry::getGraph(): array`
 
