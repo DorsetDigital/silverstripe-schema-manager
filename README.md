@@ -190,6 +190,63 @@ $productSchema->update([
 ]);
 ```
 
+## Job posting schema
+
+The module also includes a generic `JobPostingSchema` builder for recruitment and careers projects. As with the product and service builders, project code is responsible for mapping its own job data model onto the schema.
+
+A typical on-site role can be registered with:
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\JobPostingSchema;
+
+$jobSchema = JobPostingSchema::create(
+    $job->AbsoluteLink(),
+    $job->Title,
+    $job->Description
+)
+    ->setDatePosted($job->PublishDate)
+    ->setValidThrough($job->ClosingDate)
+    ->setEmploymentType('FULL_TIME')
+    ->setJobLocation(
+        locality: 'Bournemouth',
+        region: 'Dorset',
+        country: 'GB'
+    )
+    ->setBaseSalaryRange(
+        40000,
+        50000,
+        currency: 'GBP',
+        unit: 'YEAR'
+    );
+
+SchemaRegistry::add($jobSchema);
+```
+
+The job posting is linked to the automatic `WebPage` entity using `mainEntityOfPage` and uses the site's `Organization` entity as its `hiringOrganization` by default. `setHiringOrganization()` can override that relationship when required.
+
+`setJobLocation()` creates a `Place` with a structured `PostalAddress`. In addition to locality, region and country it accepts optional `streetAddress` and `postalCode` arguments.
+
+For remote roles, use `setRemote()`. An optional country can be supplied to add an `applicantLocationRequirements` restriction:
+
+```php
+$jobSchema->setRemote('GB');
+```
+
+A fixed salary can be added with:
+
+```php
+$jobSchema->setBaseSalary(
+    45000,
+    currency: 'GBP',
+    unit: 'YEAR'
+);
+```
+
+Salary ranges use `setBaseSalaryRange()` as shown above. Both methods generate a `MonetaryAmount` containing a `QuantitativeValue`; the unit can be changed for hourly, daily, weekly or monthly rates where appropriate.
+
+Like the other typed builders, `JobPostingSchema` inherits `Schema::update()` for additional Schema.org properties which are specific to a project's recruitment model.
+
 ## Optional Silverstripe Blog support
 
 The module does **not** require `silverstripe/blog`.
@@ -308,6 +365,7 @@ src/
   Model/
     Schema/
       BlogPostingSchema.php
+      JobPostingSchema.php
       OrganisationSchema.php
       ProductSchema.php
       Schema.php
