@@ -4,6 +4,7 @@ namespace DorsetDigital\SchemaManager\Tests\Control;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 
 class SchemaRegistryTest extends SapphireTest
@@ -80,6 +81,38 @@ class SchemaRegistryTest extends SapphireTest
         $this->assertCount(2, $graph[0]['mainEntity']);
         $this->assertSame('Question two?', $graph[0]['mainEntity'][1]['name']);
         $this->assertSame('Answer two.', $graph[0]['mainEntity'][1]['acceptedAnswer']['text']);
+    }
+
+    public function testSilverstripeBreadcrumbsCanBeAdded(): void
+    {
+        $section = SiteTree::create([
+            'Title' => 'About us',
+            'MenuTitle' => 'About',
+            'URLSegment' => 'about',
+        ]);
+        $section->write();
+
+        $page = SiteTree::create([
+            'Title' => 'Our team',
+            'URLSegment' => 'team',
+            'ParentID' => $section->ID,
+        ]);
+        $page->write();
+
+        SchemaRegistry::addBreadCrumbs($page);
+
+        $graph = SchemaRegistry::getGraph();
+
+        $this->assertCount(1, $graph);
+        $this->assertSame('BreadcrumbList', $graph[0]['@type']);
+        $this->assertStringEndsWith('/about/team/#breadcrumb', $graph[0]['@id']);
+        $this->assertCount(2, $graph[0]['itemListElement']);
+        $this->assertSame(1, $graph[0]['itemListElement'][0]['position']);
+        $this->assertSame('About', $graph[0]['itemListElement'][0]['name']);
+        $this->assertStringEndsWith('/about/', $graph[0]['itemListElement'][0]['item']);
+        $this->assertSame(2, $graph[0]['itemListElement'][1]['position']);
+        $this->assertSame('Our team', $graph[0]['itemListElement'][1]['name']);
+        $this->assertStringEndsWith('/about/team/', $graph[0]['itemListElement'][1]['item']);
     }
 
     public function testJsonContainsSchemaGraph(): void

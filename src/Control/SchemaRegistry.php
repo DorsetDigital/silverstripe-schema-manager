@@ -3,6 +3,7 @@
 namespace DorsetDigital\SchemaManager\Control;
 
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 
@@ -64,6 +65,47 @@ class SchemaRegistry
                 'text' => $answer,
             ],
         ];
+    }
+
+    public static function addBreadCrumbs(
+        SiteTree $page,
+        int $maxDepth = 20,
+        bool|string $stopAtPageType = false,
+        bool $showHidden = false
+    ): void {
+        $items = $page->getBreadcrumbItems($maxDepth, $stopAtPageType, $showHidden);
+
+        if (!$items || !$items->count()) {
+            return;
+        }
+
+        $itemList = [];
+        $position = 1;
+
+        foreach ($items as $item) {
+            if (!$item instanceof SiteTree) {
+                continue;
+            }
+
+            $itemList[] = [
+                '@type' => 'ListItem',
+                'position' => $position++,
+                'name' => $item->MenuTitle ?: $item->Title,
+                'item' => $item->AbsoluteLink(),
+            ];
+        }
+
+        if (!$itemList) {
+            return;
+        }
+
+        $id = rtrim($page->AbsoluteLink(), '/') . '/#breadcrumb';
+
+        self::addEntity($id, [
+            '@type' => 'BreadcrumbList',
+            '@id' => $id,
+            'itemListElement' => $itemList,
+        ]);
     }
 
     public static function getGraph(): array
