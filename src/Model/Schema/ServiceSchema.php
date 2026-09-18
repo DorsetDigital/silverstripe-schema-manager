@@ -16,7 +16,7 @@ class ServiceSchema extends Schema
             '@id' => $url . '#service',
             'url' => $url,
             'name' => $name,
-            'mainEntityOfPage' => [
+            'isPartOf' => [
                 '@id' => $url . '#webpage',
             ],
             'provider' => [
