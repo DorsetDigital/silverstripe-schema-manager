@@ -70,6 +70,8 @@ Detailed examples and configuration are kept in separate documentation:
 - [JobPosting](docs/job-posting.md) — vacancies, locations and salaries
 - [BlogPosting](docs/blog-posting.md) — optional Silverstripe Blog integration
 
+Page-level typed builders link to their `WebPage` with `isPartOf` by default. When an entity is the primary subject of a dedicated page, `setMainEntityOfPage($pageURL)` promotes that relationship explicitly.
+
 All typed builders inherit `Schema::update()`, allowing projects to add less common Schema.org properties without the module needing to model every possible field.
 
 ## Adding schema manually

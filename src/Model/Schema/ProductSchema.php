@@ -13,7 +13,7 @@ class ProductSchema extends Schema
             '@id' => $url . '#product',
             'url' => $url,
             'name' => $name,
-            'mainEntityOfPage' => [
+            'isPartOf' => [
                 '@id' => $url . '#webpage',
             ],
         ];

@@ -25,7 +25,7 @@ foreach ($page->GalleryImages() as $image) {
 SchemaRegistry::add($gallerySchema);
 ```
 
-The gallery is linked to the automatic `WebPage` with `mainEntityOfPage`. Individual images are `ImageObject` entries under `hasPart`, using `contentUrl` for the actual image asset. Name, description, width and height are optional.
+The gallery is linked to the automatic `WebPage` with `isPartOf` by default. For a dedicated gallery page, call `$gallerySchema->setMainEntityOfPage($page->AbsoluteLink())`. Individual images are `ImageObject` entries under `hasPart`, using `contentUrl` for the actual image asset. Name, description, width and height are optional.
 
 A representative thumbnail can be set with:
 

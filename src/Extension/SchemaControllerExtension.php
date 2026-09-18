@@ -50,10 +50,36 @@ class SchemaControllerExtension extends Extension
         }
 
         $page->extend('updateSchemaManagerEntities', $pageEntities);
+        $this->resolvePageRelationships($pageEntities, $page->AbsoluteLink());
         $this->registerEntities($pageEntities);
 
         if ($managerConfig->get('automatic_breadcrumb_schema')) {
             SchemaRegistry::addBreadCrumbs($page);
+        }
+    }
+
+    private function resolvePageRelationships(array $entities, string $pageURL): void
+    {
+        $mainEntity = null;
+        $webPage = null;
+
+        foreach ($entities as $entity) {
+            if ($entity instanceof WebPageSchema) {
+                $webPage = $entity;
+                continue;
+            }
+
+            if ($entity instanceof Schema && $entity->isMainEntityOfPage($pageURL)) {
+                if ($mainEntity instanceof Schema) {
+                    $mainEntity->setIsPartOfPage($pageURL);
+                }
+
+                $mainEntity = $entity;
+            }
+        }
+
+        if ($webPage) {
+            $webPage->setMainEntity($mainEntity);
         }
     }
 

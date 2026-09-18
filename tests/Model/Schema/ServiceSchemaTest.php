@@ -23,7 +23,7 @@ class ServiceSchemaTest extends SapphireTest
 
         $this->assertSame('Service', $data['@type']);
         $this->assertSame('https://example.com/services/example/#service', $data['@id']);
-        $this->assertSame('https://example.com/services/example/#webpage', $data['mainEntityOfPage']['@id']);
+        $this->assertSame('https://example.com/services/example/#webpage', $data['isPartOf']['@id']);
         $this->assertSame($baseURL . '#organisation', $data['provider']['@id']);
         $this->assertSame('United Kingdom', $data['areaServed']);
         $this->assertSame(95, $data['offers']['price']);

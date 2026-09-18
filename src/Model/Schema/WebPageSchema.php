@@ -36,4 +36,15 @@ class WebPageSchema extends Schema
 
         return new static($data);
     }
+
+    public function setMainEntity(?Schema $schema): static
+    {
+        if ($schema) {
+            $this->data['mainEntity'] = ['@id' => $schema->getID()];
+        } else {
+            unset($this->data['mainEntity']);
+        }
+
+        return $this;
+    }
 }

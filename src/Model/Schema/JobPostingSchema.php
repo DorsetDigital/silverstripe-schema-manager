@@ -16,7 +16,7 @@ class JobPostingSchema extends Schema
             '@id' => $url . '#jobposting',
             'url' => $url,
             'title' => $title,
-            'mainEntityOfPage' => [
+            'isPartOf' => [
                 '@id' => $url . '#webpage',
             ],
             'hiringOrganization' => [
