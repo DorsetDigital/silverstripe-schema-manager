@@ -4,13 +4,15 @@ namespace DorsetDigital\SchemaManager\Model\Schema;
 
 class ImageGallerySchema extends Schema
 {
-    public static function create(string $url, ?string $name = null, ?string $description = null): static
+    public static function create(string $url, ?string $name = null, ?string $description = null, ?string $identifier = null): static
     {
         $url = rtrim($url, '/') . '/';
 
+        $fragment = 'imagegallery' . ($identifier ? '-' . trim($identifier, '#-') : '');
+
         $data = [
             '@type' => 'ImageGallery',
-            '@id' => $url . '#imagegallery',
+            '@id' => $url . '#' . $fragment,
             'url' => $url,
             'isPartOf' => [
                 '@id' => $url . '#webpage',
