@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class FAQPageSchemaTest extends TestCase
 {
-    public function testCreateBuildsFaqPageLinkedToWebPage(): void
+    public function testCreateBuildsFaqPageAsPartOfWebPage(): void
     {
         $schema = FAQPageSchema::create('https://example.com/faqs');
         $data = $schema->toArray();
@@ -16,7 +16,7 @@ class FAQPageSchemaTest extends TestCase
         $this->assertSame('https://example.com/faqs/#faq', $data['@id']);
         $this->assertSame(
             ['@id' => 'https://example.com/faqs/#webpage'],
-            $data['mainEntityOfPage']
+            $data['isPartOf']
         );
         $this->assertSame([], $data['mainEntity']);
     }
