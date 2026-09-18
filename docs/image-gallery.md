@@ -33,4 +33,17 @@ A representative thumbnail can be set with:
 $gallerySchema->setThumbnail($thumbnailURL);
 ```
 
+Pages containing multiple galleries can give each gallery a stable identifier using the optional fourth argument:
+
+```php
+$gallerySchema = ImageGallerySchema::create(
+    $page->AbsoluteLink(),
+    $gallery->Title,
+    null,
+    (string) $gallery->ID
+);
+```
+
+This produces an entity ID such as `https://example.com/gallery/#imagegallery-42` while the default remains `#imagegallery`.
+
 The builder also inherits `Schema::update()` for additional Schema.org properties.
