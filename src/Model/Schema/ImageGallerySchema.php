@@ -15,7 +15,7 @@ class ImageGallerySchema extends Schema
             'mainEntityOfPage' => [
                 '@id' => $url . '#webpage',
             ],
-            'associatedMedia' => [],
+            'hasPart' => [],
         ];
 
         if ($name) {
@@ -57,7 +57,7 @@ class ImageGallerySchema extends Schema
             $image['height'] = $height;
         }
 
-        $this->data['associatedMedia'][] = $image;
+        $this->data['hasPart'][] = $image;
 
         return $this;
     }
