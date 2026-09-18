@@ -18,7 +18,7 @@ class BlogPostingSchema extends Schema
             'url' => $url,
             'headline' => $post->Title,
             'isPartOf' => [
-                '@id' => $url . '#webpage',
+                '@id' => $baseURL . '#website',
             ],
             'publisher' => [
                 '@id' => $baseURL . '#organisation',
