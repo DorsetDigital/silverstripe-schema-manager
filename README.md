@@ -11,14 +11,10 @@ Schema Manager combines CMS-managed site information with automatic page schema 
 
 ## Installation
 
-Once published on Packagist:
-
 ```bash
 composer require dorsetdigital/silverstripe-schema-manager
 vendor/bin/sake dev/build flush=1
 ```
-
-Until then, add the GitHub repository as a Composer VCS repository and require `dev-main`.
 
 ## What is automatic?
 
