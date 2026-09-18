@@ -8,6 +8,7 @@ $jobSchema = JobPostingSchema::create(
     $job->Title,
     $job->Description
 )
+    ->setMainEntityOfPage($job->AbsoluteLink())
     ->setDatePosted($job->PublishDate)
     ->setValidThrough($job->ClosingDate)
     ->setEmploymentType('FULL_TIME')
@@ -21,6 +22,6 @@ $jobSchema = JobPostingSchema::create(
 SchemaRegistry::add($jobSchema);
 ```
 
-The entity links to the automatic `WebPage` and uses the site's `Organization` as `hiringOrganization` by default.
+The entity links to the automatic `WebPage` with `isPartOf` by default. The example promotes it to `mainEntityOfPage` because it represents a dedicated job page. The site's `Organization` is used as `hiringOrganization` by default.
 
 For remote roles use `setRemote()`; an optional country adds `applicantLocationRequirements`. Fixed salaries use `setBaseSalary()`, while ranges use `setBaseSalaryRange()`. Both generate a `MonetaryAmount` with a `QuantitativeValue`.
