@@ -2,6 +2,7 @@
 
 namespace DorsetDigital\SchemaManager\Control;
 
+use DorsetDigital\SchemaManager\Model\Schema\FAQPageSchema;
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
@@ -35,8 +36,16 @@ class SchemaRegistry
         self::$entities[$id] = $data;
     }
 
+    /**
+     * @deprecated Use FAQPageSchema::create() and SchemaRegistry::add() instead.
+     */
     public static function addFAQ(string $question, string $answer, ?string $pageURL = null): void
     {
+        @trigger_error(
+            __METHOD__ . '() is deprecated. Use FAQPageSchema::create() and SchemaRegistry::add() instead.',
+            E_USER_DEPRECATED
+        );
+
         if (!$pageURL) {
             $page = Director::get_current_page();
 
@@ -47,28 +56,8 @@ class SchemaRegistry
             }
         }
 
-        $pageURL = rtrim($pageURL, '/') . '/';
-        $id = $pageURL . '#faq';
-
-        if (!isset(self::$entities[$id])) {
-            self::$entities[$id] = [
-                '@type' => 'FAQPage',
-                '@id' => $id,
-                'mainEntityOfPage' => [
-                    '@id' => $pageURL . '#webpage',
-                ],
-                'mainEntity' => [],
-            ];
-        }
-
-        self::$entities[$id]['mainEntity'][] = [
-            '@type' => 'Question',
-            'name' => $question,
-            'acceptedAnswer' => [
-                '@type' => 'Answer',
-                'text' => $answer,
-            ],
-        ];
+        $schema = FAQPageSchema::create($pageURL)->addQuestion($question, $answer);
+        self::add($schema);
     }
 
     public static function addBreadCrumbs(
