@@ -21,7 +21,12 @@ abstract class Schema
     public function setMainEntityOfPage(string $pageURL): static
     {
         $pageURL = rtrim($pageURL, '/') . '/';
-        unset($this->data['isPartOf']);
+        $webPageID = $pageURL . '#webpage';
+
+        if (($this->data['isPartOf']['@id'] ?? null) === $webPageID) {
+            unset($this->data['isPartOf']);
+        }
+
         $this->data['mainEntityOfPage'] = ['@id' => $pageURL . '#webpage'];
 
         return $this;
