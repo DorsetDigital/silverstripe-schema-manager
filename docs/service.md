@@ -12,4 +12,4 @@ $serviceSchema = ServiceSchema::create(
 SchemaRegistry::add($serviceSchema);
 ```
 
-Services link to the automatic `WebPage` and use the site's `Organization` as provider by default. `setProvider()` can override it and `setOffer()` can add pricing. Additional properties can be supplied with `Schema::update()`.
+Services link to the automatic `WebPage` with `isPartOf` by default and use the site's `Organization` as provider. On a dedicated service page, use `setMainEntityOfPage()` to promote the service to the page's main entity. `setProvider()` can override it and `setOffer()` can add pricing. Additional properties can be supplied with `Schema::update()`.
