@@ -23,7 +23,7 @@ class ProductSchemaTest extends SapphireTest
 
         $this->assertSame('Product', $data['@type']);
         $this->assertSame('https://example.com/products/example/#product', $data['@id']);
-        $this->assertSame('https://example.com/products/example/#webpage', $data['mainEntityOfPage']['@id']);
+        $this->assertSame('https://example.com/products/example/#webpage', $data['isPartOf']['@id']);
         $this->assertSame('Example product', $data['name']);
         $this->assertSame('An example product.', $data['description']);
         $this->assertSame('https://example.com/images/product.jpg', $data['image']);
@@ -33,6 +33,22 @@ class ProductSchemaTest extends SapphireTest
         $this->assertSame('GBP', $data['offers']['priceCurrency']);
         $this->assertSame('https://schema.org/InStock', $data['offers']['availability']);
         $this->assertSame('https://example.com/products/example/', $data['offers']['url']);
+    }
+
+    public function testProductCanBePromotedToMainEntityOfPage(): void
+    {
+        $schema = ProductSchema::create(
+            'https://example.com/products/example/',
+            'Example product'
+        )->setMainEntityOfPage('https://example.com/products/example/');
+
+        $data = $schema->toArray();
+
+        $this->assertArrayNotHasKey('isPartOf', $data);
+        $this->assertSame(
+            'https://example.com/products/example/#webpage',
+            $data['mainEntityOfPage']['@id']
+        );
     }
 
     public function testProductSchemaCanBeExtended(): void
