@@ -49,4 +49,26 @@ class SchemaTest extends TestCase
             $data['mainEntityOfPage']['@id']
         );
     }
+    public function testEntityCanBeReturnedToPartOfPage(): void
+    {
+        $schema = new class([
+            '@type' => 'Thing',
+            '@id' => 'https://example.com/page/#thing',
+            'mainEntityOfPage' => ['@id' => 'https://example.com/page/#webpage'],
+        ]) extends Schema {
+        };
+
+        $this->assertTrue($schema->isMainEntityOfPage('https://example.com/page/'));
+
+        $schema->setIsPartOfPage('https://example.com/page/');
+
+        $data = $schema->toArray();
+
+        $this->assertFalse($schema->isMainEntityOfPage('https://example.com/page/'));
+        $this->assertArrayNotHasKey('mainEntityOfPage', $data);
+        $this->assertSame(
+            'https://example.com/page/#webpage',
+            $data['isPartOf']['@id']
+        );
+    }
 }
