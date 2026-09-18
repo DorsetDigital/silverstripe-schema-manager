@@ -66,21 +66,25 @@ class SchemaRegistryTest extends SapphireTest
         $this->assertSame('https://example.com/', $graph[0]['url']);
     }
 
-    public function testFaqQuestionsAreAddedToSingleFaqPage(): void
+    public function testDeprecatedFaqHelperStillRegistersFaqPage(): void
     {
-        $url = 'https://example.com/faqs/';
+        $this->expectUserDeprecationMessage(
+            'DorsetDigital\\SchemaManager\\Control\\SchemaRegistry::addFAQ() is deprecated. '
+            . 'Use FAQPageSchema::create() and SchemaRegistry::add() instead.'
+        );
 
-        SchemaRegistry::addFAQ('Question one?', 'Answer one.', $url);
-        SchemaRegistry::addFAQ('Question two?', 'Answer two.', $url);
+        SchemaRegistry::addFAQ(
+            'Question one?',
+            'Answer one.',
+            'https://example.com/faqs/'
+        );
 
         $graph = SchemaRegistry::getGraph();
 
         $this->assertCount(1, $graph);
         $this->assertSame('FAQPage', $graph[0]['@type']);
         $this->assertSame('https://example.com/faqs/#faq', $graph[0]['@id']);
-        $this->assertCount(2, $graph[0]['mainEntity']);
-        $this->assertSame('Question two?', $graph[0]['mainEntity'][1]['name']);
-        $this->assertSame('Answer two.', $graph[0]['mainEntity'][1]['acceptedAnswer']['text']);
+        $this->assertSame('Question one?', $graph[0]['mainEntity'][0]['name']);
     }
 
     public function testSilverstripeBreadcrumbsCanBeAdded(): void

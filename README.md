@@ -113,30 +113,27 @@ DorsetDigital\SchemaManager\Service\SchemaManager:
 
 ## FAQ schema
 
-FAQ markup has a convenience helper:
+FAQ pages use the same typed-schema pattern as the other supported entities:
 
 ```php
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\FAQPageSchema;
 
-foreach ($this->FAQs() as $faq) {
-    SchemaRegistry::addFAQ(
+$faqSchema = FAQPageSchema::create($page->AbsoluteLink());
+
+foreach ($page->FAQs() as $faq) {
+    $faqSchema->addQuestion(
         $faq->Question,
         $faq->Answer
     );
 }
+
+SchemaRegistry::add($faqSchema);
 ```
 
-An explicit page URL can be supplied as the third argument if required:
+The builder creates one `FAQPage` entity linked to the automatic `WebPage` using `mainEntityOfPage`. Each call to `addQuestion()` appends a `Question` containing its `acceptedAnswer`.
 
-```php
-SchemaRegistry::addFAQ(
-    $faq->Question,
-    $faq->Answer,
-    $this->AbsoluteLink()
-);
-```
-
-Each call appends another `Question` to one `FAQPage` entity for the current page.
+The older `SchemaRegistry::addFAQ()` convenience helper remains available for backwards compatibility, but is deprecated. New integrations should construct an `FAQPageSchema` and register it with `SchemaRegistry::add()`.
 
 ## Product and service schema
 
@@ -365,7 +362,7 @@ Registers a raw Schema.org entity. Existing data under the same ID is recursivel
 
 ### `SchemaRegistry::addFAQ(string $question, string $answer, ?string $pageURL = null)`
 
-Adds a question and accepted answer to the current page's `FAQPage` entity.
+Deprecated compatibility helper for adding FAQ questions. New code should use `FAQPageSchema` and `SchemaRegistry::add()`.
 
 ### `SchemaRegistry::addBreadCrumbs(SiteTree $page, int $maxDepth = 20, bool|string $stopAtPageType = false, bool $showHidden = false)`
 
@@ -402,6 +399,7 @@ src/
   Model/
     Schema/
       BlogPostingSchema.php
+      FAQPageSchema.php
       ImageGallerySchema.php
       JobPostingSchema.php
       OrganisationSchema.php
