@@ -12,7 +12,7 @@ class ImageGallerySchema extends Schema
             '@type' => 'ImageGallery',
             '@id' => $url . '#imagegallery',
             'url' => $url,
-            'mainEntityOfPage' => [
+            'isPartOf' => [
                 '@id' => $url . '#webpage',
             ],
             'hasPart' => [],
