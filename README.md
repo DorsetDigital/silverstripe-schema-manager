@@ -45,56 +45,13 @@ https://example.com/about/#breadcrumb
 
 The JSON-LD is inserted automatically with Silverstripe Requirements. No template change is required.
 
-## Organisation settings
-
-After installing the module and running `dev/build`, open **Settings → Schema** in the CMS.
-
-The organisation can be managed with:
-
-- organisation name, with the site title used as a fallback
-- legal name
-- telephone and email
-- logo
-- postal address
-- external profile URLs (`sameAs`), one per line
-
-The organisation data is used to generate the site-wide `Organization` entity. `WebSite` schema is derived from SiteConfig and the canonical base URL.
-
 ## Automatic WebPage schema
 
-Every normal `SiteTree` page receives a `WebPage` entity containing its URL, title, description where available, created/modified dates and a reference to the site's `WebSite` entity.
-
-No page extension needs to be configured for this behaviour.
-
-## Automatic breadcrumb schema
-
-Every normal `SiteTree` page also receives a Schema.org `BreadcrumbList` built from Silverstripe's standard `getBreadcrumbItems()` functionality.
-
-The breadcrumb entries use `MenuTitle` where available, falling back to `Title`, and include the absolute page URL and list position expected by Schema.org.
-
-Automatic breadcrumb schema can be disabled independently while leaving the public helper available for manual use.
-
-```yaml
-DorsetDigital\SchemaManager\Service\SchemaManager:
-  automatic_breadcrumb_schema: false
-```
-
-A project can then register breadcrumbs itself, for example when it needs different Silverstripe breadcrumb options:
-
-```php
-use DorsetDigital\SchemaManager\Control\SchemaRegistry;
-
-SchemaRegistry::addBreadCrumbs(
-    $this,
-    maxDepth: 20,
-    stopAtPageType: false,
-    showHidden: false
-);
-```
+Every normal `SiteTree` page receives a `WebPage` entity containing its URL, title, description where available, created/modified dates and a reference to the site's `WebSite` entity. No page extension is required.
 
 ## Configuration
 
-Each automatic layer can be disabled independently in project YAML:
+Each automatic layer can be disabled independently:
 
 ```yaml
 DorsetDigital\SchemaManager\Service\SchemaManager:
@@ -104,196 +61,20 @@ DorsetDigital\SchemaManager\Service\SchemaManager:
   automatic_breadcrumb_schema: true
 ```
 
-For example, a project already supplying its own organisation schema can set:
+## Supported schema types
 
-```yaml
-DorsetDigital\SchemaManager\Service\SchemaManager:
-  automatic_organisation_schema: false
-```
+Detailed examples and configuration are kept in separate documentation:
 
-## FAQ schema
+- [Site schema](docs/site-schema.md) — `Organization` and `WebSite`
+- [Breadcrumbs](docs/breadcrumbs.md) — automatic and manual `BreadcrumbList`
+- [FAQPage](docs/faq.md) — questions and accepted answers
+- [ImageGallery](docs/image-gallery.md) — image collections and `ImageObject` metadata
+- [Product](docs/product.md) — products, offers, stock and brands
+- [Service](docs/service.md) — services, providers and pricing
+- [JobPosting](docs/job-posting.md) — vacancies, locations and salaries
+- [BlogPosting](docs/blog-posting.md) — optional Silverstripe Blog integration
 
-FAQ pages use the same typed-schema pattern as the other supported entities:
-
-```php
-use DorsetDigital\SchemaManager\Control\SchemaRegistry;
-use DorsetDigital\SchemaManager\Model\Schema\FAQPageSchema;
-
-$faqSchema = FAQPageSchema::create($page->AbsoluteLink());
-
-foreach ($page->FAQs() as $faq) {
-    $faqSchema->addQuestion(
-        $faq->Question,
-        $faq->Answer
-    );
-}
-
-SchemaRegistry::add($faqSchema);
-```
-
-The builder creates one `FAQPage` entity linked to the automatic `WebPage` using `mainEntityOfPage`. Each call to `addQuestion()` appends a `Question` containing its `acceptedAnswer`.
-
-The older `SchemaRegistry::addFAQ()` convenience helper remains available for backwards compatibility, but is deprecated. New integrations should construct an `FAQPageSchema` and register it with `SchemaRegistry::add()`.
-
-## Product and service schema
-
-The module includes generic builders for common `Product` and `Service` entities. They deliberately accept values rather than depending on a particular e-commerce or service module, so project code remains responsible for mapping its own data model onto Schema.org.
-
-A product can be added with:
-
-```php
-use DorsetDigital\SchemaManager\Control\SchemaRegistry;
-use DorsetDigital\SchemaManager\Model\Schema\ProductSchema;
-
-$productSchema = ProductSchema::create(
-    $product->AbsoluteLink(),
-    $product->Title,
-    $product->MetaDescription
-)
-    ->setImage($product->Image?->getAbsoluteURL())
-    ->setSKU($product->SKU)
-    ->setBrand($product->Brand)
-    ->setOffer($product->Price, 'GBP', $product->InStock);
-
-SchemaRegistry::add($productSchema);
-```
-
-The product is linked to the automatic `WebPage` entity using `mainEntityOfPage`. `setOffer()` adds a standard Schema.org `Offer` and can include stock availability.
-
-A service follows the same pattern:
-
-```php
-use DorsetDigital\SchemaManager\Control\SchemaRegistry;
-use DorsetDigital\SchemaManager\Model\Schema\ServiceSchema;
-
-$serviceSchema = ServiceSchema::create(
-    $service->AbsoluteLink(),
-    $service->Title,
-    $service->MetaDescription
-)
-    ->setAreaServed('United Kingdom');
-
-SchemaRegistry::add($serviceSchema);
-```
-
-Services link to the automatic `WebPage` entity and, by default, use the site's `Organization` entity as their provider. `setProvider()` can override that relationship, and `setOffer()` can add pricing where appropriate.
-
-Both builders inherit `Schema::update()`, so less common Schema.org properties can be added without requiring the module to model every possible product or service use case:
-
-```php
-$productSchema->update([
-    'color' => $product->Colour,
-    'material' => $product->Material,
-]);
-```
-
-## Image gallery schema
-
-The module includes an `ImageGallerySchema` builder for pages or components containing a collection of images. Individual gallery images are represented as `ImageObject` entries using Schema.org's `hasPart` relationship.
-
-```php
-use DorsetDigital\SchemaManager\Control\SchemaRegistry;
-use DorsetDigital\SchemaManager\Model\Schema\ImageGallerySchema;
-
-$gallerySchema = ImageGallerySchema::create(
-    $page->AbsoluteLink(),
-    $page->Title,
-    $page->MetaDescription
-);
-
-foreach ($page->GalleryImages() as $image) {
-    $gallerySchema->addImage(
-        $image->getAbsoluteURL(),
-        $image->Title,
-        null,
-        $image->getWidth(),
-        $image->getHeight()
-    );
-}
-
-SchemaRegistry::add($gallerySchema);
-```
-
-The gallery is linked to the automatic `WebPage` entity using `mainEntityOfPage`. Each image is added as an `ImageObject` under `hasPart`, with its actual image URL supplied as `contentUrl`. Image name, description, width and height are optional.
-
-A representative thumbnail can also be supplied with `setThumbnail()`:
-
-```php
-$gallerySchema->setThumbnail($thumbnailURL);
-```
-
-As with the other typed builders, `ImageGallerySchema` inherits `Schema::update()` for additional Schema.org properties required by a project.
-
-## Job posting schema
-
-The module also includes a generic `JobPostingSchema` builder for recruitment and careers projects. As with the product and service builders, project code is responsible for mapping its own job data model onto the schema.
-
-A typical on-site role can be registered with:
-
-```php
-use DorsetDigital\SchemaManager\Control\SchemaRegistry;
-use DorsetDigital\SchemaManager\Model\Schema\JobPostingSchema;
-
-$jobSchema = JobPostingSchema::create(
-    $job->AbsoluteLink(),
-    $job->Title,
-    $job->Description
-)
-    ->setDatePosted($job->PublishDate)
-    ->setValidThrough($job->ClosingDate)
-    ->setEmploymentType('FULL_TIME')
-    ->setJobLocation(
-        locality: 'Bournemouth',
-        region: 'Dorset',
-        country: 'GB'
-    )
-    ->setBaseSalaryRange(
-        40000,
-        50000,
-        currency: 'GBP',
-        unit: 'YEAR'
-    );
-
-SchemaRegistry::add($jobSchema);
-```
-
-The job posting is linked to the automatic `WebPage` entity using `mainEntityOfPage` and uses the site's `Organization` entity as its `hiringOrganization` by default. `setHiringOrganization()` can override that relationship when required.
-
-`setJobLocation()` creates a `Place` with a structured `PostalAddress`. In addition to locality, region and country it accepts optional `streetAddress` and `postalCode` arguments.
-
-For remote roles, use `setRemote()`. An optional country can be supplied to add an `applicantLocationRequirements` restriction:
-
-```php
-$jobSchema->setRemote('GB');
-```
-
-A fixed salary can be added with:
-
-```php
-$jobSchema->setBaseSalary(
-    45000,
-    currency: 'GBP',
-    unit: 'YEAR'
-);
-```
-
-Salary ranges use `setBaseSalaryRange()` as shown above. Both methods generate a `MonetaryAmount` containing a `QuantitativeValue`; the unit can be changed for hourly, daily, weekly or monthly rates where appropriate.
-
-Like the other typed builders, `JobPostingSchema` inherits `Schema::update()` for additional Schema.org properties which are specific to a project's recruitment model.
-
-## Optional Silverstripe Blog support
-
-The module does **not** require `silverstripe/blog`.
-
-If the project uses Silverstripe Blog, enable the supplied extension in project YAML:
-
-```yaml
-SilverStripe\Blog\Model\BlogPost:
-  extensions:
-    - DorsetDigital\SchemaManager\Extension\BlogPostSchemaExtension
-```
-
-After a configuration flush, BlogPost pages retain their normal `WebPage` entity and also gain a linked `BlogPosting` entity containing the headline, publication/modification dates, description and featured image where available.
+All typed builders inherit `Schema::update()`, allowing projects to add less common Schema.org properties without the module needing to model every possible field.
 
 ## Adding schema manually
 
@@ -383,6 +164,10 @@ Returns JSON suitable for an `application/ld+json` script element.
 ### `SchemaRegistry::flush(): void`
 
 Clears the request registry.
+
+## Documentation
+
+The `docs/` directory contains the detailed guides for each supported schema type. The README is intentionally focused on installation, automatic behaviour, configuration and the common registry API.
 
 ## Project structure
 
