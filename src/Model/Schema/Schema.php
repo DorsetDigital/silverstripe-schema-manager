@@ -18,6 +18,15 @@ abstract class Schema
         return $this->data;
     }
 
+    public function setMainEntityOfPage(string $pageURL): static
+    {
+        $pageURL = rtrim($pageURL, '/') . '/';
+        unset($this->data['isPartOf']);
+        $this->data['mainEntityOfPage'] = ['@id' => $pageURL . '#webpage'];
+
+        return $this;
+    }
+
     public function update(array $data): static
     {
         $this->data = array_replace_recursive($this->data, $data);
