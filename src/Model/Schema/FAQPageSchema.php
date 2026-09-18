@@ -11,7 +11,7 @@ class FAQPageSchema extends Schema
         return new static([
             '@type' => 'FAQPage',
             '@id' => $url . '#faq',
-            'mainEntityOfPage' => [
+            'isPartOf' => [
                 '@id' => $url . '#webpage',
             ],
             'mainEntity' => [],
