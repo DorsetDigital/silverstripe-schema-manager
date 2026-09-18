@@ -17,11 +17,8 @@ class BlogPostingSchema extends Schema
             '@id' => $url . '#blogposting',
             'url' => $url,
             'headline' => $post->Title,
-            'mainEntityOfPage' => [
-                '@id' => $url . '#webpage',
-            ],
             'isPartOf' => [
-                '@id' => $baseURL . '#website',
+                '@id' => $url . '#webpage',
             ],
             'publisher' => [
                 '@id' => $baseURL . '#organisation',
@@ -51,6 +48,6 @@ class BlogPostingSchema extends Schema
             }
         }
 
-        return new static($data);
+        return (new static($data))->setMainEntityOfPage($url);
     }
 }
