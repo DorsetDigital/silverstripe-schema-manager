@@ -8,6 +8,7 @@ $productSchema = ProductSchema::create(
     $product->Title,
     $product->MetaDescription
 )
+    ->setMainEntityOfPage($product->AbsoluteLink())
     ->setImage($product->Image?->getAbsoluteURL())
     ->setSKU($product->SKU)
     ->setBrand($product->Brand)
@@ -16,4 +17,4 @@ $productSchema = ProductSchema::create(
 SchemaRegistry::add($productSchema);
 ```
 
-Products link to the automatic `WebPage` with `mainEntityOfPage`. `setOffer()` creates an `Offer` and can include stock availability. Less common properties can be supplied with `Schema::update()`.
+Products link to the automatic `WebPage` with `isPartOf` by default. The example explicitly promotes the product to `mainEntityOfPage` because it represents a dedicated product page. `setOffer()` creates an `Offer` and can include stock availability. Less common properties can be supplied with `Schema::update()`.
