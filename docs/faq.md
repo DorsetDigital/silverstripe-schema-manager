@@ -15,6 +15,6 @@ foreach ($page->FAQs() as $faq) {
 SchemaRegistry::add($faqSchema);
 ```
 
-The entity is linked to the page's automatic `WebPage` using `mainEntityOfPage`. Each call to `addQuestion()` adds a Schema.org `Question` containing its `acceptedAnswer`.
+By default the entity is linked to the page's automatic `WebPage` using `isPartOf`. If the FAQ is the primary subject of a dedicated page, call `$faqSchema->setMainEntityOfPage($page->AbsoluteLink())`. Each call to `addQuestion()` adds a Schema.org `Question` containing its `acceptedAnswer`.
 
 `SchemaRegistry::addFAQ()` remains available for backwards compatibility but is deprecated. New integrations should use `FAQPageSchema`.
