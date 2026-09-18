@@ -190,6 +190,43 @@ $productSchema->update([
 ]);
 ```
 
+## Image gallery schema
+
+The module includes an `ImageGallerySchema` builder for pages or components containing a collection of images. Individual gallery images are represented as `ImageObject` entries using Schema.org's `hasPart` relationship.
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\ImageGallerySchema;
+
+$gallerySchema = ImageGallerySchema::create(
+    $page->AbsoluteLink(),
+    $page->Title,
+    $page->MetaDescription
+);
+
+foreach ($page->GalleryImages() as $image) {
+    $gallerySchema->addImage(
+        $image->getAbsoluteURL(),
+        $image->Title,
+        null,
+        $image->getWidth(),
+        $image->getHeight()
+    );
+}
+
+SchemaRegistry::add($gallerySchema);
+```
+
+The gallery is linked to the automatic `WebPage` entity using `mainEntityOfPage`. Each image is added as an `ImageObject` under `hasPart`, with its actual image URL supplied as `contentUrl`. Image name, description, width and height are optional.
+
+A representative thumbnail can also be supplied with `setThumbnail()`:
+
+```php
+$gallerySchema->setThumbnail($thumbnailURL);
+```
+
+As with the other typed builders, `ImageGallerySchema` inherits `Schema::update()` for additional Schema.org properties required by a project.
+
 ## Job posting schema
 
 The module also includes a generic `JobPostingSchema` builder for recruitment and careers projects. As with the product and service builders, project code is responsible for mapping its own job data model onto the schema.
@@ -365,6 +402,7 @@ src/
   Model/
     Schema/
       BlogPostingSchema.php
+      ImageGallerySchema.php
       JobPostingSchema.php
       OrganisationSchema.php
       ProductSchema.php
