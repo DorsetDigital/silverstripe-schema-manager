@@ -5,8 +5,6 @@ namespace DorsetDigital\SchemaManager\Extension;
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use DorsetDigital\SchemaManager\Model\Schema\BreadcrumbListSchema;
 use DorsetDigital\SchemaManager\Model\Schema\OrganisationSchema;
-use DorsetDigital\SchemaManager\Model\Schema\Schema;
-use DorsetDigital\SchemaManager\Model\Schema\WebPageSchema;
 use DorsetDigital\SchemaManager\Model\Schema\WebsiteSchema;
 use DorsetDigital\SchemaManager\Service\SchemaManager;
 use SilverStripe\CMS\Model\SiteTree;
@@ -60,40 +58,7 @@ class SchemaControllerExtension extends Extension
             }
         }
 
-        $this->resolvePageRelationships($pageEntities, $page->AbsoluteLink());
         $this->registerEntities($pageEntities);
-    }
-
-    private function resolvePageRelationships(array $entities, string $pageURL): void
-    {
-        $mainEntity = null;
-        $breadcrumb = null;
-        $webPage = null;
-
-        foreach ($entities as $entity) {
-            if ($entity instanceof WebPageSchema) {
-                $webPage = $entity;
-                continue;
-            }
-
-            if ($entity instanceof BreadcrumbListSchema) {
-                $breadcrumb = $entity;
-                continue;
-            }
-
-            if ($entity instanceof Schema && $entity->isMainEntityOfPage($pageURL)) {
-                if ($mainEntity instanceof Schema) {
-                    $mainEntity->setIsPartOfPage($pageURL);
-                }
-
-                $mainEntity = $entity;
-            }
-        }
-
-        if ($webPage) {
-            $webPage->setMainEntity($mainEntity);
-            $webPage->setBreadcrumb($breadcrumb);
-        }
     }
 
     private function registerEntities(array $entities): void
