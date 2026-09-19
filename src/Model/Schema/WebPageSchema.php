@@ -37,6 +37,17 @@ class WebPageSchema extends Schema
         return new static($data);
     }
 
+    public function setBreadcrumb(?Schema $schema): static
+    {
+        if ($schema) {
+            $this->data['breadcrumb'] = ['@id' => $schema->getID()];
+        } else {
+            unset($this->data['breadcrumb']);
+        }
+
+        return $this;
+    }
+
     public function setMainEntity(?Schema $schema): static
     {
         if ($schema) {
