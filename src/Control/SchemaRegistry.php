@@ -154,7 +154,10 @@ class SchemaRegistry
         }
 
         foreach (self::$schemas as $id => $schema) {
-            self::$entities[$id] = $schema->toArray();
+            self::$entities[$id] = array_replace_recursive(
+                $schema->toArray(),
+                self::$entities[$id] ?? []
+            );
         }
     }
 
