@@ -103,13 +103,13 @@ where `$schema` extends `DorsetDigital\SchemaManager\Model\Schema\Schema`.
 
 ## Extension point
 
-Before page entities are registered, Schema Manager calls this Silverstripe extension hook on the page:
+The registry API can be called directly from application code; an extension hook is not required. For reusable integrations that need to contribute schema automatically to arbitrary pages, Schema Manager also calls this Silverstripe extension hook before page entities are registered:
 
 ```php
 updateSchemaManagerEntities(array &$entities)
 ```
 
-Extensions can therefore append, remove or modify typed schema objects without replacing the registry or controller integration.
+Extensions can therefore append, remove or modify typed schema objects without replacing the registry or controller integration. This is primarily an integration mechanism rather than a requirement for ordinary project code.
 
 For example:
 
@@ -133,11 +133,11 @@ The bundled Blog integration uses this mechanism, so it also provides a referenc
 
 ### `SchemaRegistry::add(Schema $schema)`
 
-Registers a typed schema object.
+Registers a typed schema object. It can be called directly from controllers or other application code. Relationships are resolved when the graph is rendered, so schemas registered independently still participate in automatic `WebPage.mainEntity` and breadcrumb relationship resolution.
 
 ### `SchemaRegistry::addEntity(string $id, array $data)`
 
-Registers a raw Schema.org entity. Existing data under the same ID is recursively merged.
+Registers a raw Schema.org entity. Existing data under the same ID is recursively merged, including entities previously registered as typed schemas with `add()`. This allows project code to augment a typed entity without replacing it.
 
 ### `SchemaRegistry::addFAQ(string $question, string $answer, ?string $pageURL = null)`
 
