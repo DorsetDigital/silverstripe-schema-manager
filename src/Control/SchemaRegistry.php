@@ -2,7 +2,9 @@
 
 namespace DorsetDigital\SchemaManager\Control;
 
+use DorsetDigital\SchemaManager\Model\Schema\BreadcrumbListSchema;
 use DorsetDigital\SchemaManager\Model\Schema\FAQPageSchema;
+use DorsetDigital\SchemaManager\Model\Schema\WebPageSchema;
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
@@ -12,6 +14,8 @@ class SchemaRegistry
 {
     private static array $entities = [];
 
+    private static array $schemas = [];
+
     public static function add(Schema $schema): void
     {
         $id = $schema->getID();
@@ -20,6 +24,7 @@ class SchemaRegistry
             return;
         }
 
+        self::$schemas[$id] = $schema;
         self::addEntity($id, $schema->toArray());
     }
 
@@ -103,7 +108,54 @@ class SchemaRegistry
 
     public static function getGraph(): array
     {
+        self::resolveRelationships();
+
         return array_values(self::$entities);
+    }
+
+    private static function resolveRelationships(): void
+    {
+        $webPages = [];
+
+        foreach (self::$schemas as $schema) {
+            if ($schema instanceof WebPageSchema) {
+                $webPages[$schema->getID()] = $schema;
+            }
+        }
+
+        foreach ($webPages as $webPageID => $webPage) {
+            $pageURL = substr($webPageID, 0, -strlen('#webpage'));
+            $mainEntity = null;
+            $breadcrumb = null;
+
+            foreach (self::$schemas as $schema) {
+                if ($schema === $webPage) {
+                    continue;
+                }
+
+                if ($schema instanceof BreadcrumbListSchema
+                    && $schema->getID() === $pageURL . '#breadcrumb'
+                ) {
+                    $breadcrumb = $schema;
+                    continue;
+                }
+
+                if ($schema->isMainEntityOfPage($pageURL)) {
+                    if ($mainEntity instanceof Schema) {
+                        $mainEntity->setIsPartOfPage($pageURL);
+                    }
+
+                    $mainEntity = $schema;
+                }
+            }
+
+            $webPage->setMainEntity($mainEntity);
+            $webPage->setBreadcrumb($breadcrumb);
+        }
+
+        foreach (self::$schemas as $id => $schema) {
+            self::$entities[$id] = $schema->toArray();
+        }
     }
 
     public static function getSchema(): array
@@ -129,5 +181,6 @@ class SchemaRegistry
     public static function flush(): void
     {
         self::$entities = [];
+        self::$schemas = [];
     }
 }
