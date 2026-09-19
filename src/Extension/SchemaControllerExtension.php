@@ -3,6 +3,7 @@
 namespace DorsetDigital\SchemaManager\Extension;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\BreadcrumbListSchema;
 use DorsetDigital\SchemaManager\Model\Schema\OrganisationSchema;
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
 use DorsetDigital\SchemaManager\Model\Schema\WebPageSchema;
@@ -50,22 +51,33 @@ class SchemaControllerExtension extends Extension
         }
 
         $page->extend('updateSchemaManagerEntities', $pageEntities);
-        $this->resolvePageRelationships($pageEntities, $page->AbsoluteLink());
-        $this->registerEntities($pageEntities);
 
         if ($managerConfig->get('automatic_breadcrumb_schema')) {
-            SchemaRegistry::addBreadCrumbs($page);
+            $breadcrumb = BreadcrumbListSchema::fromPage($page);
+
+            if ($breadcrumb) {
+                $pageEntities[] = $breadcrumb;
+            }
         }
+
+        $this->resolvePageRelationships($pageEntities, $page->AbsoluteLink());
+        $this->registerEntities($pageEntities);
     }
 
     private function resolvePageRelationships(array $entities, string $pageURL): void
     {
         $mainEntity = null;
+        $breadcrumb = null;
         $webPage = null;
 
         foreach ($entities as $entity) {
             if ($entity instanceof WebPageSchema) {
                 $webPage = $entity;
+                continue;
+            }
+
+            if ($entity instanceof BreadcrumbListSchema) {
+                $breadcrumb = $entity;
                 continue;
             }
 
@@ -80,6 +92,7 @@ class SchemaControllerExtension extends Extension
 
         if ($webPage) {
             $webPage->setMainEntity($mainEntity);
+            $webPage->setBreadcrumb($breadcrumb);
         }
     }
 
