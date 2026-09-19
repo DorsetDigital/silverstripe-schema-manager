@@ -5,6 +5,8 @@ namespace DorsetDigital\SchemaManager\Extension;
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use DorsetDigital\SchemaManager\Model\Schema\BreadcrumbListSchema;
 use DorsetDigital\SchemaManager\Model\Schema\OrganisationSchema;
+use DorsetDigital\SchemaManager\Model\Schema\Schema;
+use DorsetDigital\SchemaManager\Model\Schema\WebPageSchema;
 use DorsetDigital\SchemaManager\Model\Schema\WebsiteSchema;
 use DorsetDigital\SchemaManager\Service\SchemaManager;
 use SilverStripe\CMS\Model\SiteTree;
