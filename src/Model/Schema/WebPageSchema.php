@@ -2,23 +2,22 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Control\Director;
 
 class WebPageSchema extends Schema
 {
     public static function fromPage(SiteTree $page): static
     {
         $url = rtrim($page->AbsoluteLink(), '/') . '/';
-        $baseURL = rtrim(Director::absoluteBaseURL(), '/') . '/';
 
         $data = [
             '@type' => 'WebPage',
-            '@id' => $url . '#webpage',
+            '@id' => SchemaIDs::webPage($page),
             'url' => $url,
             'name' => $page->Title,
             'isPartOf' => [
-                '@id' => $baseURL . '#website',
+                '@id' => SchemaIDs::website(),
             ],
         ];
 
