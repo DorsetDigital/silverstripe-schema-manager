@@ -2,6 +2,7 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use SilverStripe\Control\Director;
 use SilverStripe\SiteConfig\SiteConfig;
 
@@ -9,15 +10,14 @@ class WebsiteSchema extends Schema
 {
     public static function fromSiteConfig(SiteConfig $config): static
     {
-        $baseURL = rtrim(Director::absoluteBaseURL(), '/') . '/';
 
         return new static([
             '@type' => 'WebSite',
-            '@id' => $baseURL . '#website',
-            'url' => $baseURL,
+            '@id' => SchemaIDs::website(),
+            'url' => rtrim(Director::absoluteBaseURL(), '/') . '/',
             'name' => $config->Title,
             'publisher' => [
-                '@id' => $baseURL . '#organisation',
+                '@id' => SchemaIDs::organisation(),
             ],
         ]);
     }
