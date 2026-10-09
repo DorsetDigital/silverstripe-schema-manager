@@ -63,12 +63,12 @@ jobs:
           mkdir -p app/src
           cat > app/src/Page.php <<'PHP'
           <?php
-          use SilverStripe\\CMS\\Model\\SiteTree;
+          use SilverStripe\CMS\Model\SiteTree;
           class Page extends SiteTree {}
           PHP
           cat > app/src/PageController.php <<'PHP'
           <?php
-          use SilverStripe\\CMS\\Controllers\\ContentController;
+          use SilverStripe\CMS\Controllers\ContentController;
           class PageController extends ContentController {}
           PHP
 
