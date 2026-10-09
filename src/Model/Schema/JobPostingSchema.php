@@ -2,14 +2,13 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
-use SilverStripe\Control\Director;
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 
 class JobPostingSchema extends Schema
 {
     public static function create(string $url, string $title, ?string $description = null): static
     {
         $url = rtrim($url, '/') . '/';
-        $baseURL = rtrim(Director::absoluteBaseURL(), '/') . '/';
 
         $data = [
             '@type' => 'JobPosting',
@@ -17,10 +16,10 @@ class JobPostingSchema extends Schema
             'url' => $url,
             'title' => $title,
             'isPartOf' => [
-                '@id' => $url . '#webpage',
+                '@id' => SchemaIDs::forPageURL($url, 'webpage'),
             ],
             'hiringOrganization' => [
-                '@id' => $baseURL . '#organisation',
+                '@id' => SchemaIDs::organisation(),
             ],
         ];
 

@@ -2,14 +2,13 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
-use SilverStripe\Control\Director;
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 
 class ServiceSchema extends Schema
 {
     public static function create(string $url, string $name, ?string $description = null): static
     {
         $url = rtrim($url, '/') . '/';
-        $baseURL = rtrim(Director::absoluteBaseURL(), '/') . '/';
 
         $data = [
             '@type' => 'Service',
@@ -17,10 +16,10 @@ class ServiceSchema extends Schema
             'url' => $url,
             'name' => $name,
             'isPartOf' => [
-                '@id' => $url . '#webpage',
+                '@id' => SchemaIDs::forPageURL($url, 'webpage'),
             ],
             'provider' => [
-                '@id' => $baseURL . '#organisation',
+                '@id' => SchemaIDs::organisation(),
             ],
         ];
 

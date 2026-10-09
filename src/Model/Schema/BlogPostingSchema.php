@@ -2,7 +2,7 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
-use SilverStripe\Control\Director;
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use SilverStripe\ORM\DataObject;
 
 class BlogPostingSchema extends Schema
@@ -10,7 +10,6 @@ class BlogPostingSchema extends Schema
     public static function fromBlogPost(DataObject $post): static
     {
         $url = rtrim($post->AbsoluteLink(), '/') . '/';
-        $baseURL = rtrim(Director::absoluteBaseURL(), '/') . '/';
 
         $data = [
             '@type' => 'BlogPosting',
@@ -18,10 +17,10 @@ class BlogPostingSchema extends Schema
             'url' => $url,
             'headline' => $post->Title,
             'isPartOf' => [
-                '@id' => $baseURL . '#website',
+                '@id' => SchemaIDs::website(),
             ],
             'publisher' => [
-                '@id' => $baseURL . '#organisation',
+                '@id' => SchemaIDs::organisation(),
             ],
         ];
 
