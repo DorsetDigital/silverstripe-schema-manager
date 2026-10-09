@@ -2,6 +2,7 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use SilverStripe\CMS\Model\SiteTree;
 
 class BreadcrumbListSchema extends Schema
@@ -42,7 +43,7 @@ class BreadcrumbListSchema extends Schema
 
         return new static([
             '@type' => 'BreadcrumbList',
-            '@id' => $url . '#breadcrumb',
+            '@id' => SchemaIDs::breadcrumb($page),
             'itemListElement' => $itemList,
         ]);
     }
