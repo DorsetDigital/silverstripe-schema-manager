@@ -72,5 +72,8 @@ jobs:
           class PageController extends ContentController {}
           PHP
 
+      - name: Build Silverstripe test database
+        run: vendor/bin/sake dev/build flush=1
+
       - name: Run tests
         run: vendor/bin/phpunit
