@@ -2,6 +2,7 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use SilverStripe\Control\Director;
 use SilverStripe\SiteConfig\SiteConfig;
 
@@ -9,14 +10,13 @@ class OrganisationSchema extends Schema
 {
     public static function fromSiteConfig(SiteConfig $config): static
     {
-        $baseURL = rtrim(Director::absoluteBaseURL(), '/') . '/';
-        $id = $baseURL . '#organisation';
+        $id = SchemaIDs::organisation();
 
         $data = [
             '@type' => 'Organization',
             '@id' => $id,
             'name' => $config->SchemaOrganisationName ?: $config->Title,
-            'url' => $baseURL,
+            'url' => rtrim(Director::absoluteBaseURL(), '/') . '/',
         ];
 
         if ($config->SchemaOrganisationLegalName) {
