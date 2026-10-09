@@ -2,6 +2,8 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
+
 abstract class Schema
 {
     public function __construct(protected array $data)
@@ -21,13 +23,13 @@ abstract class Schema
     public function setMainEntityOfPage(string $pageURL): static
     {
         $pageURL = rtrim($pageURL, '/') . '/';
-        $webPageID = $pageURL . '#webpage';
+        $webPageID = SchemaIDs::forPageURL($pageURL, 'webpage');
 
         if (($this->data['isPartOf']['@id'] ?? null) === $webPageID) {
             unset($this->data['isPartOf']);
         }
 
-        $this->data['mainEntityOfPage'] = ['@id' => $pageURL . '#webpage'];
+        $this->data['mainEntityOfPage'] = ['@id' => SchemaIDs::forPageURL($pageURL, 'webpage')];
 
         return $this;
     }
@@ -36,13 +38,13 @@ abstract class Schema
     {
         $pageURL = rtrim($pageURL, '/') . '/';
 
-        return ($this->data['mainEntityOfPage']['@id'] ?? null) === $pageURL . '#webpage';
+        return ($this->data['mainEntityOfPage']['@id'] ?? null) === SchemaIDs::forPageURL($pageURL, 'webpage');
     }
 
     public function setIsPartOfPage(string $pageURL): static
     {
         $pageURL = rtrim($pageURL, '/') . '/';
-        $webPageID = $pageURL . '#webpage';
+        $webPageID = SchemaIDs::forPageURL($pageURL, 'webpage');
 
         if (($this->data['mainEntityOfPage']['@id'] ?? null) === $webPageID) {
             unset($this->data['mainEntityOfPage']);
