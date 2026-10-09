@@ -113,10 +113,10 @@ class SchemaRegistryTest extends SapphireTest
         $this->assertCount(2, $graph[0]['itemListElement']);
         $this->assertSame(1, $graph[0]['itemListElement'][0]['position']);
         $this->assertSame('About', $graph[0]['itemListElement'][0]['name']);
-        $this->assertStringEndsWith('/about/', $graph[0]['itemListElement'][0]['item']);
+        $this->assertSame('/about', rtrim(parse_url($graph[0]['itemListElement'][0]['item'], PHP_URL_PATH), '/'));
         $this->assertSame(2, $graph[0]['itemListElement'][1]['position']);
         $this->assertSame('Our team', $graph[0]['itemListElement'][1]['name']);
-        $this->assertStringEndsWith('/about/team/', $graph[0]['itemListElement'][1]['item']);
+        $this->assertSame('/about/team', rtrim(parse_url($graph[0]['itemListElement'][1]['item'], PHP_URL_PATH), '/'));
     }
 
     public function testSingleBreadcrumbIsNotAdded(): void
