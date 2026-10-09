@@ -2,6 +2,7 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 class ProductSchema extends Schema
 {
     public static function create(string $url, string $name, ?string $description = null): static
@@ -14,7 +15,7 @@ class ProductSchema extends Schema
             'url' => $url,
             'name' => $name,
             'isPartOf' => [
-                '@id' => $url . '#webpage',
+                '@id' => SchemaIDs::forPageURL($url, 'webpage'),
             ],
         ];
 
