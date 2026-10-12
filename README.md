@@ -163,6 +163,10 @@ Returns JSON suitable for an `application/ld+json` script element.
 
 Clears the request registry.
 
+## Page annotations (work in progress)
+
+The new declarative annotation foundation provides Event and Service definitions and supports custom PHP handlers. The CMS editing and published-page integration are not yet implemented. See [Page annotations and Advanced Usage](docs/page-annotations.md) for the YAML format and a custom handler example.
+
 ## Documentation
 
 The `docs/` directory contains the detailed guides for each supported schema type. The README is intentionally focused on installation, automatic behaviour, configuration and the common registry API.
