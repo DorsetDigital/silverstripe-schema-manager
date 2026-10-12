@@ -42,7 +42,9 @@
         }
     },
     "extra": {
-        "expose": []
+        "expose": [
+            "client/dist"
+        ]
     },
     "config": {
         "sort-packages": true

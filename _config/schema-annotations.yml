@@ -1,0 +1,57 @@
+---
+Name: schema-manager-annotations
+---
+DorsetDigital\SchemaManager\Annotation\SchemaDefinitionRegistry:
+  definitions:
+    event:
+      label: Event
+      schema_type: Event
+      fields:
+        name:
+          source: page.Title
+        url:
+          source: page.AbsoluteLink
+        description:
+          source: page.MetaDescription
+        startDate:
+          type: datetime
+          required: true
+        endDate:
+          type: datetime
+        eventStatus:
+          type: select
+          prefix: 'https://schema.org/'
+          options:
+            EventScheduled: Scheduled
+            EventCancelled: Cancelled
+            EventPostponed: Postponed
+          default: EventScheduled
+        organizer:
+          type: entity
+          targets: [Organization, Person]
+          allow_existing: true
+          allow_inline: true
+        location:
+          type: entity
+          targets: [Place]
+          allow_existing: true
+          allow_inline: true
+    service:
+      label: Service
+      schema_type: Service
+      fields:
+        name:
+          source: page.Title
+        url:
+          source: page.AbsoluteLink
+        description:
+          source: page.MetaDescription
+        serviceType:
+          type: text
+        provider:
+          type: entity
+          targets: [Organization, Person]
+          allow_existing: true
+          allow_inline: true
+        areaServed:
+          type: text
