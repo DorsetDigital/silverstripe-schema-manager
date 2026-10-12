@@ -1,8 +1,8 @@
-# Page annotations (in development)
+# Page annotations
 
 Page annotations are intended for occasional Event or Service markup on otherwise unstructured pages. Structured event systems, product catalogues, job boards, FAQs and galleries should continue using the PHP builders.
 
-The annotation foundation uses `SchemaDefinitionRegistry`, `SchemaAnnotationFactory`, `GenericAnnotationHandler` and `GenericSchema`. A CMS editing interface and published-page integration are still to be implemented.
+The page editor has a **Schema** tab with one optional annotation per page. Select Event or Service (or a project-defined type) and complete the fields generated from the YAML definition. Annotation type and values are stored on the versioned SiteTree record, so they follow the page's normal draft/publish lifecycle. The generated entity joins the existing page schema registry.\n\nThe implementation uses `SchemaDefinitionRegistry`, `SchemaAnnotationFactory`, `GenericAnnotationHandler` and `GenericSchema`.
 
 ## Definitions
 
