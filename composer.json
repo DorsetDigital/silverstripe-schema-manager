@@ -42,7 +42,9 @@
         }
     },
     "extra": {
-        "expose": []
+        "expose": [
+            "client/dist/js/page-annotations.js"
+        ]
     },
     "config": {
         "sort-packages": true
