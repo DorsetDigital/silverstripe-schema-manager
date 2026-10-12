@@ -43,7 +43,7 @@
     },
     "extra": {
         "expose": [
-            "client/dist/js/page-annotations.js"
+            "client/dist"
         ]
     },
     "config": {
