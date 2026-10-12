@@ -49,6 +49,21 @@ class PageSchemaAnnotationExtension extends Extension
         ));
 
         foreach ($definitions as $key => $definition) {
+            $description = $definition['description'] ?? 'Add structured data for this page. Title and URL are taken from the page automatically.';
+            $sources = [];
+            foreach (($definition['fields'] ?? []) as $property => $config) {
+                if (is_array($config) && !empty($config['source'])) {
+                    $sources[] = $property;
+                }
+            }
+            if ($sources) {
+                $description .= ' Automatically populated: ' . implode(', ', $sources) . '.';
+            }
+            $fields->addFieldToTab('Root.Schema', LiteralField::create(
+                'SchemaAnnotationHelp_' . $key,
+                '<div class="schema-annotation-help" data-schema-type="' . htmlspecialchars((string) $key, ENT_QUOTES) . '">' .
+                htmlspecialchars((string) $description, ENT_QUOTES) . '</div>'
+            ));
             foreach (($definition['fields'] ?? []) as $property => $config) {
                 if (!is_array($config) || isset($config['source'])) {
                     continue;
