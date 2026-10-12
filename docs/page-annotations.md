@@ -10,6 +10,30 @@ Definitions are merged using Silverstripe YAML configuration under `DorsetDigita
 
 Supported field sources: `page.Title`, `page.AbsoluteLink`, `page.MetaDescription`. Supported value types initially include text, textarea, datetime, select, and entity. Entity values may refer to an existing `@id` or provide an inline type and name.
 
+## Overriding bundled YAML definitions
+
+Project configuration can override individual properties of the bundled definitions without copying the whole definition. Give your configuration block a unique `Name` and use `After: schema-manager-annotations` to ensure it is applied after the module's defaults.
+
+For example, the bundled Event definition uses `page.MetaDescription` as the source of its description. To make that an editable textarea instead:
+
+```yaml
+---
+Name: app-schema-annotations
+After: schema-manager-annotations
+---
+DorsetDigital\\SchemaManager\\Annotation\\SchemaDefinitionRegistry:
+  definitions:
+    event:
+      fields:
+        description:
+          source: null
+          type: textarea
+```
+
+This overrides only the Event description field; the other Event fields and the Service definition remain available. Setting `source: null` is important: simply adding `type: textarea` would leave the inherited `source: page.MetaDescription` in place, so the generic handler would continue reading the page metadata.
+
+You can use the same pattern to change labels, defaults, options, or a definition's `handler`. After changing YAML configuration, flush Silverstripe's configuration cache (for example with `?flush=1`).
+
 ## Advanced Usage: custom PHP handlers
 
 Use the optional `handler` key to process non-standard page annotations:
