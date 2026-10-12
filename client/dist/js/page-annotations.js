@@ -38,4 +38,13 @@
     }
   });
   document.addEventListener('submit', e => sync(e.target), true);
+  function init() {
+    document.querySelectorAll('form').forEach(form => {
+      if (form.querySelector('[name="SchemaAnnotationValues"]')) sync(form);
+    });
+  }
+  document.addEventListener('DOMContentLoaded', init);
+  new MutationObserver(records => {
+    if (records.some(record => record.addedNodes.length)) init();
+  }).observe(document.documentElement, {childList: true, subtree: true});
 })();
