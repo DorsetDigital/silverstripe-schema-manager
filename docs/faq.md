@@ -70,3 +70,14 @@ Use **`FAQPageHelper::addQuestion()`** for ordinary FAQs, particularly when cont
 `SchemaRegistry::addFAQ()` is retained for backwards compatibility but is deprecated. New integrations should call `FAQPageHelper::addQuestion()` instead.
 
 See [Schema entities and relationships](schema-entities.md) for more on entity IDs and page relationships.
+
+## Complete public builder method reference
+
+These are the methods declared by the builder classes. All also inherit the [shared Schema methods](developer-api.md#shared-schema-builder-methods).
+
+### `FAQPageSchema`
+
+| Method and parameters | Purpose |
+| --- | --- |
+| `public static function create(string $identifier)` | Create a schema object. |
+| `public function addQuestion(string $question, string $answer)` | Add a question. |
