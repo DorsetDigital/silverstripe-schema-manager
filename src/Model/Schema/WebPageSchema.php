@@ -49,7 +49,7 @@ class WebPageSchema extends Schema
 
     public function setMainEntity(?string $entityID): static
     {
-        if ($schema) {
+        if ($entityID !== null) {
             $this->data['mainEntity'] = ['@id' => $entityID];
         } else {
             unset($this->data['mainEntity']);
