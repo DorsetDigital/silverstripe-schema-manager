@@ -12,7 +12,7 @@ class SchemaIDsTest extends TestCase
         $base = substr(SchemaIDs::organisation(), 0, -strlen('#organisation'));
 
         $this->assertSame($base . '#person-member-42', SchemaIDs::forEntity('person', 'member-42'));
-        $this->assertSame($base . '#product_product_123', SchemaIDs::forEntity('product', 'product_123'));
+        $this->assertSame($base . '#product-product_123', SchemaIDs::forEntity('product', 'product_123'));
         $this->assertSame(SchemaIDs::forEntity('person', 'member-42'), SchemaIDs::forEntity('person', 'member-42'));
     }
 
