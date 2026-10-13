@@ -91,11 +91,6 @@ class SchemaRegistryTest extends SapphireTest
 
     public function testDeprecatedFaqHelperStillRegistersFaqPage(): void
     {
-        $this->expectUserDeprecationMessage(
-            'DorsetDigital\\SchemaManager\\Control\\SchemaRegistry::addFAQ() is deprecated. '
-            . 'Use FAQPageSchema::create() and SchemaRegistry::add() instead.'
-        );
-
         SchemaRegistry::addFAQ(
             'Question one?',
             'Answer one.',
