@@ -112,8 +112,7 @@ class SchemaControllerExtension extends Extension
     private function buildWebPage(SiteTree $page): WebPageSchema
     {
         $schema = WebPageSchema::create((string) $page->ID, $page->Title)
-            ->setURL(rtrim($page->AbsoluteLink(), '/') . '/')
-            ;
+            ->setURL(rtrim($page->AbsoluteLink(), '/') . '/');
 
         if (SchemaManager::config()->get('automatic_website_schema')) {
             $schema->setIsPartOf(SchemaIDs::website());
