@@ -1,13 +1,12 @@
 # Silverstripe Schema Manager
 
-Structured-data management for Silverstripe CMS 6.
+Structured-data management for Silverstripe CMS 5 and 6.
 
 Schema Manager combines CMS-managed site information with automatic page schema and a request-scoped registry. Schema.org entities are emitted as a single linked JSON-LD `@graph` in the page `<head>`.
 
 ## Requirements
 
-- PHP 8.3+
-- Silverstripe CMS 6
+- PHP 8.1+ with Silverstripe CMS 5, or PHP 8.3+ with Silverstripe CMS 6 (CMS 5 compatibility is currently being tested on the `feature/cms5-compatibility` branch)
 
 ## Installation
 
@@ -73,6 +72,23 @@ Detailed examples and configuration are kept in separate documentation:
 Page-level typed builders link to their `WebPage` with `isPartOf` by default. When an entity is the primary subject of a dedicated page, `setMainEntityOfPage($pageURL)` promotes that relationship explicitly.
 
 All typed builders inherit `Schema::update()`, allowing projects to add less common Schema.org properties without the module needing to model every possible field.
+
+## Optional Silverstripe Blog integration
+
+The `BlogPosting` integration is **not enabled automatically**. If your project uses `silverstripe/blog`, add the bundled extension to blog posts in your project's YAML configuration:
+
+```yaml
+---
+Name: app-schema-blog
+After:
+  - schema-manager
+---
+SilverStripe\Blog\Model\BlogPost:
+  extensions:
+    - DorsetDigital\SchemaManager\Extension\BlogPostSchemaExtension
+```
+
+Run `vendor/bin/sake dev/build flush=1` after changing the configuration. Blog posts will then contribute `BlogPosting` schema with their headline, publication and modification dates, description and featured image where available. See [BlogPosting](docs/blog-posting.md) for details.
 
 ## Adding schema manually
 
@@ -163,9 +179,9 @@ Returns JSON suitable for an `application/ld+json` script element.
 
 Clears the request registry.
 
-## Page annotations (work in progress)
+## Page annotations
 
-The new declarative annotation foundation provides Event and Service definitions and supports custom PHP handlers. The CMS editing and published-page integration are not yet implemented. See [Page annotations and Advanced Usage](docs/page-annotations.md) for the YAML format and a custom handler example.
+The page editor includes a **Schema** tab for one optional annotation per page. Built-in definitions support Event and Service; projects can add definitions or custom PHP handlers through YAML. Annotation values are saved with the versioned page, and published annotations are included in the JSON-LD graph. Pages without an annotation retain the normal automatic schema output. See [Page annotations and advanced usage](docs/page-annotations.md) for configuration and examples.
 
 ## Documentation
 
