@@ -11,6 +11,25 @@ use SilverStripe\Control\Director;
  */
 final class SchemaIDs
 {
+    /**
+     * Build a stable, site-scoped ID for a repeatable schema entity.
+     *
+     * Identifiers are deliberately not slugified: invalid input is rejected so
+     * that different source identifiers cannot silently collapse to one ID.
+     */
+    public static function forEntity(string $type, string $identifier): string
+    {
+        foreach (['type' => $type, 'identifier' => $identifier] as $label => $value) {
+            if (!preg_match('/\\A[a-zA-Z0-9][a-zA-Z0-9_-]*\\z/D', $value)) {
+                throw new \\InvalidArgumentException(
+                    sprintf('Schema %s must contain only letters, numbers, hyphens or underscores and start with a letter or number.', $label)
+                );
+            }
+        }
+
+        return self::baseURL() . '#' . $type . '-' . $identifier;
+    }
+
     public static function organisation(): string
     {
         return self::baseURL() . '#organisation';
