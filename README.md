@@ -33,7 +33,7 @@ Beyond the automatically generated entities, the module provides builders and in
 | Schema.org type | Documentation |
 | --- | --- |
 | Organization and WebSite | [Site schema](docs/site-schema.md) |
-| WebPage | [Page schema and relationships](docs/schema-entities.md) |
+| WebPage | [WebPage builder](docs/web-page.md) |
 | BreadcrumbList | [Breadcrumbs](docs/breadcrumbs.md) |
 | FAQPage | [FAQs](docs/faq.md) |
 | ImageGallery | [Image galleries](docs/image-gallery.md) |
