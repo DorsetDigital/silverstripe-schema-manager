@@ -32,7 +32,7 @@ class SchemaResponseMiddleware implements HTTPMiddleware
 
         $body = $response->getBody();
         // Even an incorrectly labelled XML document must never be injected into.
-        if (is_string($body) && preg_match('/^\s*<\?xml\b/i', $body)) {
+        if (is_string($body) && str_starts_with(ltrim($body), '<?xml')) {
             return $response;
         }
 
