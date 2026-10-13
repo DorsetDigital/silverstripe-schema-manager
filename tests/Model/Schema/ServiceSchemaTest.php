@@ -11,10 +11,11 @@ class ServiceSchemaTest extends SapphireTest
     public function testServiceSchemaBuildsCommonServiceData(): void
     {
         $schema = ServiceSchema::create(
-            'https://example.com/services/example/',
+            'example',
             'Example service',
             'An example service.'
         )
+            ->setURL('https://example.com/services/example/')
             ->setAreaServed('United Kingdom')
             ->setOffer(95, 'GBP');
 
@@ -22,9 +23,9 @@ class ServiceSchemaTest extends SapphireTest
         $baseURL = rtrim(Director::absoluteBaseURL(), '/') . '/';
 
         $this->assertSame('Service', $data['@type']);
-        $this->assertSame('https://example.com/services/example/#service', $data['@id']);
-        $this->assertSame('https://example.com/services/example/#webpage', $data['isPartOf']['@id']);
-        $this->assertSame($baseURL . '#organisation', $data['provider']['@id']);
+        $this->assertStringEndsWith('#service-example', $data['@id']);
+        $this->assertArrayNotHasKey('isPartOf', $data);
+        $this->assertArrayNotHasKey('provider', $data);
         $this->assertSame('United Kingdom', $data['areaServed']);
         $this->assertSame(95, $data['offers']['price']);
         $this->assertSame('GBP', $data['offers']['priceCurrency']);
