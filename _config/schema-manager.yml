@@ -9,9 +9,9 @@ SilverStripe\SiteConfig\SiteConfig:
   extensions:
     - DorsetDigital\SchemaManager\Extension\SiteConfigSchemaExtension
 
-SilverStripe\Core\Injector\Injector:
-  SilverStripe\View\Requirements_Backend:
-    class: DorsetDigital\SchemaManager\View\SchemaRequirementsBackend
+SilverStripe\Control\Director:
+  middleware:
+    - DorsetDigital\SchemaManager\Middleware\SchemaResponseMiddleware
 
 SilverStripe\CMS\Model\SiteTree:
   extensions:
