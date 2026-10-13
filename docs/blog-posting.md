@@ -25,6 +25,8 @@ The integration is **opt-in**: installing Schema Manager alone does not attach t
 
 The `BlogPosting` entity uses the blog post's URL and title, `PublishDate` (falling back to `Created`), `LastEdited`, and `Summary` (falling back to `MetaDescription`). A featured image is included when the post exposes an existing `FeaturedImage`.
 
-It references the site's `Organization` as publisher and identifies the blog post as the main entity of its `WebPage`.
+When automatic organisation schema is enabled, it references the site's `Organization` as publisher and identifies the blog post as the main entity of its `WebPage`.
 
 For custom fields or additional Schema.org properties, you can extend the generated schema through the standard `updateSchemaManagerEntities` hook.
+
+Linked Blog authors are registered as reusable `Person` entities with stable IDs; name-only credits are embedded. Author profile URLs are omitted when Blog profiles are disabled. The generic `BlogPostingSchema::create($identifier, $headline, $description)` builder can also be used independently of Silverstripe Blog.
