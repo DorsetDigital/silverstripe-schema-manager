@@ -143,7 +143,13 @@ class SchemaRegistry
         }
 
         foreach ($webPages as $webPageID => $webPage) {
-            $pageURL = substr($webPageID, 0, -strlen('#webpage'));
+            $pageURL = $webPage->toArray()['url'] ?? null;
+            if (!is_string($pageURL) || $pageURL === '') {
+                continue;
+            }
+
+            $pageURL = rtrim($pageURL, '/') . '/';
+            $defaultWebPageID = SchemaIDs::forPageURL($pageURL, 'webpage');
             $mainEntity = null;
             $breadcrumb = null;
 
@@ -153,7 +159,7 @@ class SchemaRegistry
                 }
 
                 if ($schema instanceof BreadcrumbListSchema
-                    && $schema->getEntityID() === $pageURL . '#breadcrumb'
+                    && $schema->getEntityID() === SchemaIDs::forPageURL($pageURL, 'breadcrumb')
                 ) {
                     $breadcrumb = $schema;
                     continue;
@@ -168,8 +174,32 @@ class SchemaRegistry
                 }
             }
 
-            $webPage->setMainEntity($mainEntity?->getEntityID());
-            $webPage->setBreadcrumb($breadcrumb?->getEntityID());
+            if ($mainEntity !== null) {
+                $webPage->setMainEntity($mainEntity->getEntityID());
+            }
+
+            // A developer-specified breadcrumb relationship takes precedence.
+            if ($breadcrumb !== null && !isset($webPage->toArray()['breadcrumb'])) {
+                $webPage->setBreadcrumb($breadcrumb->getEntityID());
+            }
+
+            // The builder uses the conventional WebPage ID as a fallback.
+            // When this page has a custom ID, resolve references to the
+            // actual registered WebPage without changing the public API.
+            if ($webPageID !== $defaultWebPageID) {
+                foreach (self::$schemas as $schema) {
+                    if ($schema === $webPage) {
+                        continue;
+                    }
+
+                    $data = $schema->toArray();
+                    foreach (['mainEntityOfPage', 'isPartOf'] as $relationship) {
+                        if (($data[$relationship]['@id'] ?? null) === $defaultWebPageID) {
+                            $schema->update([$relationship => ['@id' => $webPageID]]);
+                        }
+                    }
+                }
+            }
         }
 
         foreach (self::$schemas as $id => $schema) {
