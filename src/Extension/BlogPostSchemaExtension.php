@@ -4,6 +4,7 @@ namespace DorsetDigital\SchemaManager\Extension;
 
 use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use DorsetDigital\SchemaManager\Model\Schema\BlogPostingSchema;
+use DorsetDigital\SchemaManager\Model\Schema\PersonSchema;
 use DorsetDigital\SchemaManager\Service\SchemaManager;
 use SilverStripe\Core\Extension;
 
@@ -40,6 +41,38 @@ class BlogPostSchemaExtension extends Extension
 
         if (SchemaManager::config()->get('automatic_organisation_schema')) {
             $schema->setPublisher(SchemaIDs::organisation());
+        }
+
+        $authors = [];
+        $profilesDisabled = $post->getProfilesDisabled();
+
+        foreach ($post->getCredits() as $credit) {
+            $name = trim((string) $credit->Name);
+            if ($name === '') {
+                continue;
+            }
+
+            // Linked Member credits expose an ID; static AuthorNames do not.
+            $memberID = (int) ($credit->ID ?? 0);
+            if ($memberID > 0) {
+                $person = PersonSchema::create('blog-author-' . $memberID, $name);
+                $profileURL = $credit->URL ?? null;
+
+                if (!$profilesDisabled && is_string($profileURL)
+                    && filter_var($profileURL, FILTER_VALIDATE_URL)
+                    && in_array(parse_url($profileURL, PHP_URL_SCHEME), ['http', 'https'], true)) {
+                    $person->setURL($profileURL);
+                }
+
+                $entities[] = $person;
+                $authors[] = ['@id' => $person->getEntityID()];
+            } else {
+                $authors[] = ['@type' => 'Person', 'name' => $name];
+            }
+        }
+
+        if ($authors) {
+            $schema->setAuthors($authors);
         }
 
         $entities[] = $schema;
