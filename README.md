@@ -149,7 +149,11 @@ $pageID = SchemaIDs::webPage($page);
 $breadcrumbID = SchemaIDs::breadcrumb($page);
 ```
 
-`webPage()` and `breadcrumb()` can also be called without `$page` when there is a current Silverstripe page. For a custom page-based entity, use `SchemaIDs::forPageURL($url, 'fragment')`.
+Each method above returns the entity's **ID as a string**, not a complete schema entity. This is useful because typed builders such as `setProvider()` and `setWorksFor()` accept an ID string and build the JSON-LD reference themselves.
+
+`webPage()` and `breadcrumb()` can also be called without `$page` when there is a current Silverstripe page.
+
+For your own entities, `SchemaIDs::forPageURL($url, 'fragment')` generates a consistent ID from a page URL and a name you choose. For example, `SchemaIDs::forPageURL('https://example.com/services/', 'service')` returns `https://example.com/services/#service`. It saves you manually joining the URL and fragment, and ensures the same format is used throughout the module.
 
 For example, a custom Service integration can reference the **existing organisation entity** as its provider:
 
@@ -167,7 +171,9 @@ SchemaRegistry::addEntity(
 );
 ```
 
-`SchemaIDs::ref($id)` simply returns `['@id' => $id]`, the format used to link to another schema entity. **These helpers only generate identifiers and references**; they don't register new entities or change the existing ones.
+In this example, `forPageURL()` creates the **new Service entity's ID**. The `provider` property needs to point to the **existing organisation entity**. `SchemaIDs::organisation()` gives us that organisation's ID as a string, while `SchemaIDs::ref()` wraps the string in the JSON-LD reference format: `['@id' => 'https://example.com/#organisation']`.
+
+That extra `ref()` call is only needed here because we're constructing a raw schema array. Typed builders such as `ServiceSchema::setProvider()` accept the string directly and create the reference for you. **Neither helper registers an entity**; they only generate IDs or format references.
 
 See [Working with schema entities](docs/schema-entities.md) for more on registering custom entities and linking them together.
 
