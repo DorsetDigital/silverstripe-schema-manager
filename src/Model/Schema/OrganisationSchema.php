@@ -3,58 +3,33 @@
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
 use DorsetDigital\SchemaManager\Control\SchemaIDs;
-use SilverStripe\Control\Director;
-use SilverStripe\SiteConfig\SiteConfig;
 
 class OrganisationSchema extends Schema
 {
-    public static function fromSiteConfig(SiteConfig $config): static
+    public static function create(string $identifier, string $name): static
     {
-        $id = SchemaIDs::organisation();
-
-        $data = [
+        return new static([
             '@type' => 'Organization',
-            '@id' => $id,
-            'name' => $config->SchemaOrganisationName ?: $config->Title,
-            'url' => rtrim(Director::absoluteBaseURL(), '/') . '/',
-        ];
-
-        if ($config->SchemaOrganisationLegalName) {
-            $data['legalName'] = $config->SchemaOrganisationLegalName;
-        }
-
-        if ($config->SchemaOrganisationPhone) {
-            $data['telephone'] = $config->SchemaOrganisationPhone;
-        }
-
-        if ($config->SchemaOrganisationEmail) {
-            $data['email'] = $config->SchemaOrganisationEmail;
-        }
-
-        $logo = $config->SchemaOrganisationLogo();
-        if ($logo && $logo->exists()) {
-            $data['logo'] = $logo->getAbsoluteURL();
-        }
-
-        $address = array_filter([
-            '@type' => 'PostalAddress',
-            'streetAddress' => $config->SchemaOrganisationStreetAddress,
-            'addressLocality' => $config->SchemaOrganisationLocality,
-            'addressRegion' => $config->SchemaOrganisationRegion,
-            'postalCode' => $config->SchemaOrganisationPostalCode,
-            'addressCountry' => $config->SchemaOrganisationCountry,
+            '@id' => SchemaIDs::forEntity('organisation', $identifier),
+            'name' => $name,
         ]);
+    }
 
-        if (count($address) > 1) {
-            $data['address'] = $address;
-        }
+    public function setURL(?string $url): static { return $this->setOptional('url', $url); }
+    public function setLegalName(?string $name): static { return $this->setOptional('legalName', $name); }
+    public function setTelephone(?string $phone): static { return $this->setOptional('telephone', $phone); }
+    public function setEmail(?string $email): static { return $this->setOptional('email', $email); }
+    public function setLogo(?string $url): static { return $this->setOptional('logo', $url); }
+    public function setAddress(?array $address): static
+    {
+        return $this->setOptional('address', $address === null ? null : ['@type' => 'PostalAddress'] + $address);
+    }
+    public function setSameAs(array $urls): static { return $this->setOptional('sameAs', array_values(array_filter($urls))); }
 
-        $sameAs = preg_split('/\R+/', (string) $config->SchemaOrganisationSameAs, -1, PREG_SPLIT_NO_EMPTY);
-        $sameAs = array_values(array_filter(array_map('trim', $sameAs ?: [])));
-        if ($sameAs) {
-            $data['sameAs'] = $sameAs;
-        }
-
-        return new static($data);
+    private function setOptional(string $key, mixed $value): static
+    {
+        if ($value === null) unset($this->data[$key]);
+        else $this->data[$key] = $value;
+        return $this;
     }
 }
