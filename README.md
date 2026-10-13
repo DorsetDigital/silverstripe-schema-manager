@@ -134,6 +134,40 @@ SchemaRegistry::add(
 
 Builders normally reference a page's `WebPage` with `isPartOf`. Use `setMainEntityOfPage($url)` where the entity is the primary subject of a dedicated page. Multiple `FAQPageSchema` objects for the same URL combine questions into one `FAQPage` entity.
 
+## Schema entities, IDs and relationships
+
+Schema Manager uses a linked JSON-LD `@graph`, not isolated script blocks. Each registered entity with an `@id` can be referenced by other entities. The `SchemaIDs` helper centralises stable IDs so integrations can refer to the same organisation, website, page and breadcrumb without hard-coding fragments:
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+
+$organisationID = SchemaIDs::organisation();
+$websiteID = SchemaIDs::website();
+$pageID = SchemaIDs::webPage($page);
+$breadcrumbID = SchemaIDs::breadcrumb($page);
+
+// Reference an existing entity from another schema.
+SchemaRegistry::addEntity(
+    'https://example.com/#custom-service',
+    [
+        '@id' => 'https://example.com/#custom-service',
+        '@type' => 'Service',
+        'provider' => SchemaIDs::ref($organisationID),
+    ]
+);
+```
+
+Use `SchemaIDs::forPageURL($url, 'fragment')` to create a canonical page-based ID for other entities. **Resolving an ID does not register the entity**: use `SchemaRegistry::add()` for typed schemas or `addEntity()` for raw entities.
+
+Relationships are resolved when the registry produces its graph. The automatic `WebPage` can link to its `BreadcrumbList` and its primary entity; page builders can declare `mainEntityOfPage` or `isPartOf`. A later `addEntity()` call with the same ID augments existing properties rather than discarding them.
+
+### Entity fields in CMS page annotations
+
+Page annotations support **entity fields** in addition to ordinary text, dates and select fields. An entity field can reference an existing entity by `@id` or describe an inline entity using its type and name. For example, the bundled Event annotation allows an organiser (Organization or Person) and a location (Place); the Service annotation allows a provider (Organization or Person). Definitions can restrict the permitted entity types and whether existing or inline values are accepted.
+
+The annotation definitions are YAML-driven, with built-in Event and Service definitions. Projects can override individual fields, add annotation types or supply custom handlers. See [Page annotations](docs/page-annotations.md).
+
 ## Optional Silverstripe Blog integration
 
 The `BlogPosting` integration is **not enabled automatically**. If your project uses `silverstripe/blog`, add the bundled extension to blog posts in your project's YAML configuration:
@@ -246,7 +280,7 @@ The page editor includes a **Schema** tab for one optional annotation per page. 
 
 ## Documentation
 
-The `docs/` directory contains the detailed guides for each supported schema type. The README is intentionally focused on installation, automatic behaviour, configuration and the common registry API.
+The `docs/` directory contains detailed guides for the main integrations and schema types. Other builders are linked to their implementations in the supported-types table. The README covers the public API, entity relationships and configuration.
 
 ## Project structure
 
@@ -256,26 +290,37 @@ _config/
   schema-annotations.yml
 src/
   Annotation/
+    GenericAnnotationHandler.php
     SchemaAnnotationFactory.php
-    SchemaDefinitionRegistry.php
     SchemaAnnotationHandler.php
-  Middleware/
-    SchemaResponseMiddleware.php
+    SchemaDefinitionRegistry.php
   Control/
+    SchemaIDs.php
     SchemaRegistry.php
   Extension/
     BlogPostSchemaExtension.php
     PageSchemaAnnotationExtension.php
     SchemaControllerExtension.php
     SiteConfigSchemaExtension.php
+  Middleware/
+    SchemaResponseMiddleware.php
   Model/
     Schema/
+      AggregateRatingSchema.php
       BlogPostingSchema.php
+      BreadcrumbListSchema.php
+      EventSchema.php
       FAQPageSchema.php
+      GenericSchema.php
       ImageGallerySchema.php
       JobPostingSchema.php
+      LocalBusinessSchema.php
       OrganisationSchema.php
+      PersonSchema.php
       ProductSchema.php
+      QuotationSchema.php
+      RatingSchema.php
+      ReviewSchema.php
       Schema.php
       ServiceSchema.php
       WebPageSchema.php
@@ -288,6 +333,7 @@ The module is deliberately split into small responsibilities:
 
 - **schema classes** build individual Schema.org entities
 - **the registry** collects, merges and renders the graph
+- **SchemaIDs** provides stable identifiers and reusable entity references
 - **Silverstripe extensions** decide which entities should be registered for a request
 - **response middleware** inserts the final graph without replacing the Requirements backend
 - **page annotations** provide a CMS editing interface for occasional structured data
