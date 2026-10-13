@@ -18,7 +18,7 @@ class SchemaRegistry
 
     public static function add(Schema $schema): void
     {
-        $id = $schema->getID();
+        $id = $schema->getEntityID();
 
         if (!$id) {
             return;
@@ -138,7 +138,7 @@ class SchemaRegistry
 
         foreach (self::$schemas as $schema) {
             if ($schema instanceof WebPageSchema) {
-                $webPages[$schema->getID()] = $schema;
+                $webPages[$schema->getEntityID()] = $schema;
             }
         }
 
@@ -153,7 +153,7 @@ class SchemaRegistry
                 }
 
                 if ($schema instanceof BreadcrumbListSchema
-                    && $schema->getID() === $pageURL . '#breadcrumb'
+                    && $schema->getEntityID() === $pageURL . '#breadcrumb'
                 ) {
                     $breadcrumb = $schema;
                     continue;
@@ -168,8 +168,8 @@ class SchemaRegistry
                 }
             }
 
-            $webPage->setMainEntity($mainEntity);
-            $webPage->setBreadcrumb($breadcrumb);
+            $webPage->setMainEntity($mainEntity?->getEntityID());
+            $webPage->setBreadcrumb($breadcrumb?->getEntityID());
         }
 
         foreach (self::$schemas as $id => $schema) {
