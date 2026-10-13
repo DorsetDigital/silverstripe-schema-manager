@@ -70,11 +70,12 @@ class CustomEventHandler implements SchemaAnnotationHandler
         }
 
         return EventSchema::create(
-            $page->AbsoluteLink(),
+            'page-' . $page->ID,
             $page->Title,
             $values['startDate'],
             $page->MetaDescription ?: null
-        )->setMainEntityOfPage($page->AbsoluteLink());
+        )->setURL($page->AbsoluteLink())
+         ->setMainEntityOfPage($page->AbsoluteLink());
     }
 }
 ```
