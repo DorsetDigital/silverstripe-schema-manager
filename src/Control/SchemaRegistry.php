@@ -142,79 +142,75 @@ class SchemaRegistry
 
     private static function resolveRelationships(): void
     {
-        $webPages = [];
-
-        foreach (self::$schemas as $schema) {
-            if ($schema instanceof WebPageSchema) {
-                $webPages[$schema->getEntityID()] = $schema;
+        foreach (self::$schemas as $webPage) {
+            if (!$webPage instanceof WebPageSchema) {
+                continue;
             }
-        }
 
-        foreach ($webPages as $webPageID => $webPage) {
+            $webPageID = $webPage->getEntityID();
             $pageURL = $webPage->toArray()['url'] ?? null;
             if (!is_string($pageURL) || $pageURL === '') {
                 continue;
             }
 
             $pageURL = rtrim($pageURL, '/') . '/';
-            $defaultWebPageID = SchemaIDs::forPageURL($pageURL, 'webpage');
-            $mainEntity = null;
-            $breadcrumb = null;
+            $defaultID = SchemaIDs::forPageURL($pageURL, 'webpage');
+            $mainEntities = [];
 
             foreach (self::$schemas as $schema) {
                 if ($schema === $webPage) {
                     continue;
                 }
 
+                $data = $schema->toArray();
+                $mainRef = $data['mainEntityOfPage']['@id'] ?? null;
+                $partRef = $data['isPartOf']['@id'] ?? null;
+
+                if ($mainRef === $defaultID || $mainRef === $webPageID) {
+                    $mainEntities[] = $schema;
+                }
+
+                // Reconcile conventional references with a registered page's
+                // custom ID. Only relationships for this page are rewritten.
+                if ($webPageID !== $defaultID && $partRef === $defaultID) {
+                    $data['isPartOf'] = ['@id' => $webPageID];
+                    self::$entities[$schema->getEntityID()] = array_replace_recursive(
+                        self::$entities[$schema->getEntityID()] ?? [],
+                        $data
+                    );
+                }
+
                 if ($schema instanceof BreadcrumbListSchema
                     && $schema->getEntityID() === SchemaIDs::forPageURL($pageURL, 'breadcrumb')
-                ) {
-                    $breadcrumb = $schema;
-                    continue;
-                }
-
-                if ($schema->isMainEntityOfPage($pageURL)
-                    || ($schema->toArray()['mainEntityOfPage']['@id'] ?? null) === $webPageID) {
-                    if ($mainEntity instanceof Schema) {
-                        $mainEntity->setIsPartOfPage($pageURL);
-                    }
-
-                    $mainEntity = $schema;
+                    && !isset($webPage->toArray()['breadcrumb'])) {
+                    $webPage->setBreadcrumb($schema->getEntityID());
                 }
             }
 
-            if ($mainEntity !== null) {
-                $webPage->setMainEntity($mainEntity->getEntityID());
-            }
-
-            // A developer-specified breadcrumb relationship takes precedence.
-            if ($breadcrumb !== null && !isset($webPage->toArray()['breadcrumb'])) {
-                $webPage->setBreadcrumb($breadcrumb->getEntityID());
-            }
-
-            // The builder uses the conventional WebPage ID as a fallback.
-            // When this page has a custom ID, resolve references to the
-            // actual registered WebPage without changing the public API.
-            if ($webPageID !== $defaultWebPageID) {
-                foreach (self::$schemas as $schema) {
-                    if ($schema === $webPage) {
-                        continue;
-                    }
-
-                    $data = $schema->toArray();
-                    foreach (['mainEntityOfPage', 'isPartOf'] as $relationship) {
-                        if (($data[$relationship]['@id'] ?? null) === $defaultWebPageID) {
-                            $schema->update([$relationship => ['@id' => $webPageID]]);
-                        }
-                    }
+            if ($mainEntities) {
+                // Last registered main entity wins; previous contenders become
+                // supporting entities. Resolve directly to the actual page ID
+                // so repeated graph generation produces the same result.
+                $winner = array_pop($mainEntities);
+                foreach ($mainEntities as $demoted) {
+                    $id = $demoted->getEntityID();
+                    $data = self::$entities[$id] ?? $demoted->toArray();
+                    unset($data['mainEntityOfPage']);
+                    $data['isPartOf'] = ['@id' => $webPageID];
+                    self::$entities[$id] = $data;
                 }
-            }
-        }
 
-        foreach (self::$schemas as $id => $schema) {
-            self::$entities[$id] = array_replace_recursive(
-                self::$entities[$id] ?? [],
-                $schema->toArray()
+                $winnerID = $winner->getEntityID();
+                $data = self::$entities[$winnerID] ?? $winner->toArray();
+                unset($data['isPartOf']);
+                $data['mainEntityOfPage'] = ['@id' => $webPageID];
+                self::$entities[$winnerID] = $data;
+                $webPage->setMainEntity($winnerID);
+            }
+
+            self::$entities[$webPageID] = array_replace_recursive(
+                self::$entities[$webPageID] ?? [],
+                $webPage->toArray()
             );
         }
     }
