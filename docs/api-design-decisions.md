@@ -78,6 +78,16 @@ The relationship audit identified behaviour that must be preserved when changing
 - Document practical examples for product listings, dedicated product pages, reusable elements, and duplicate registration, and add regression tests before implementation is considered complete.
 - **Agreed duplicate-merge precedence:** when duplicate registrations of the same entity ID refer to the same page, an explicit `mainEntityOfPage` declaration takes precedence over `isPartOf`, regardless of registration order. Treat this as an edge case, but make it deterministic and cover both registration orders with regression tests. Other merge precedence details remain to be worked out during implementation.
 
+## ServiceSchema — agreed
+
+- `ServiceSchema::create(string $identifier, string $name, ?string $description = null)` creates a site-scoped, page-independent `#service-{identifier}` entity ID.
+- Optional `setURL()` supplies a canonical service URL without implicitly creating a page relationship. Keep `setAreaServed()` and `setOffer()`, including Offer URL fallback when the Service URL is set.
+- Preserve explicit `setMainEntityOfPage()` and `setIsPartOfPage()` relationship handling; no automatic page relationship from the constructor.
+- **Conditional default provider:** the constructor sets `provider` to `SchemaIDs::organisation()` only when `SchemaManager::config()->get('automatic_organisation_schema')` is enabled. If automatic organisation schema is disabled, omit `provider` by default rather than emit a potentially dangling reference.
+- `setProvider(?string $id)` overrides the default with an explicit entity ID; passing `null` removes the provider relationship. This allows a Service without a provider even when automatic organisation schema is enabled.
+- `setProvider()` accepts an explicit entity ID even when automatic organisation schema is disabled (e.g. a custom organisation or LocalBusiness). Do not require registry membership for a reference.
+- The constructor checks the existing SchemaManager configuration; do not introduce another configuration setting for this behaviour.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
