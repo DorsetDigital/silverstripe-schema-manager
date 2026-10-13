@@ -139,6 +139,15 @@ The relationship audit identified behaviour that must be preserved when changing
 - Move FAQ-specific question aggregation out of `SchemaRegistry` into the helper, preserving the legacy outcome of one FAQPage with all questions on a page. Ensure the helper works regardless of element order and doesn't lose questions when other entities are registered. **Exception to the no-legacy-alias rule:** retain the historical `SchemaRegistry::addFAQ(string $question, string $answer, ?string $pageURL = null)` method in its original location, emit `E_USER_DEPRECATED`, and delegate directly to `FAQPageHelper::addQuestion($question, $answer, $pageURL)`. The helper accepts an optional page URL to preserve the old method's behaviour; no duplicate implementation.
 - Test direct builder usage, multiple FAQ elements on one page, page-scoped isolation, and coexistence with a different page main entity. Document both short examples and the intentional legacy replacement.
 
+## OrganisationSchema — agreed
+
+- Add general-purpose `OrganisationSchema::create(string $identifier, string $name)` for additional organisations, generating a stable site-scoped `#organisation-{identifier}` entity ID.
+- Keep `OrganisationSchema::fromSiteConfig(SiteConfig $config)` for the site's primary organisation, retaining the established global `SchemaIDs::organisation()` / `#organisation` ID and its existing SiteConfig mapping. Internally reuse standard builder/setter behaviour where practical without changing its identity.
+- Add fluent setters for canonical URL, legal name, telephone, email, logo, postal address and `sameAs` profiles, corresponding to the fields already supported by the SiteConfig factory.
+- No automatic page relationships for additional organisations; optional canonical URL remains distinct from entity ID and page relationships.
+- Keep the existing `SchemaControllerExtension` automatic registration, controlled by `SchemaManager::config()->get('automatic_organisation_schema')`. Do not add a separate helper or new configuration mechanism.
+- Document both the primary SiteConfig organisation and an independently registered additional organisation; test stable IDs, field mapping and compatibility with references from other builders.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
