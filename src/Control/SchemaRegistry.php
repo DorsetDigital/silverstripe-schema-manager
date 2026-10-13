@@ -165,7 +165,8 @@ class SchemaRegistry
                     continue;
                 }
 
-                if ($schema->isMainEntityOfPage($pageURL)) {
+                if ($schema->isMainEntityOfPage($pageURL)
+                    || ($schema->toArray()['mainEntityOfPage']['@id'] ?? null) === $webPageID) {
                     if ($mainEntity instanceof Schema) {
                         $mainEntity->setIsPartOfPage($pageURL);
                     }
