@@ -134,3 +134,20 @@ $schema->update([
 For ordinary `silverstripe/blog` sites, the bundled extension is the simplest option and keeps schema aligned with the Blog module's fields and credits. For custom article types or other publishing systems, use the manual builder. You can use both approaches in the same project, but avoid registering two BlogPosting entities for the same article.
 
 See [Schema entities, IDs and relationships](schema-entities.md) for more on registration and entity references.
+
+## Complete public builder method reference
+
+These are the methods declared by the builder classes. All also inherit the [shared Schema methods](developer-api.md#shared-schema-builder-methods).
+
+### `BlogPostingSchema`
+
+| Method and parameters | Purpose |
+| --- | --- |
+| `public static function create(string $identifier, string $headline, ?string $description = null)` | Create a schema object. |
+| `public function setURL(?string $url)` | Set the u r l property. |
+| `public function setImage(?string $url)` | Set the image property. |
+| `public function setDatePublished(?string $date)` | Set the date published property. |
+| `public function setDateModified(?string $date)` | Set the date modified property. |
+| `public function setPublisher(?string $id)` | Set the publisher property. |
+| `public function setAuthor(?string $id)` | Set the author property. |
+| `public function setAuthors(array $authors)` | Set the authors property. |
