@@ -39,6 +39,14 @@ This document records agreed decisions for the upcoming breaking API revision. *
 - Author remains a plain string by default, with optional author-entity reference via existing methods.
 - Validate nonempty referenced entity ID. Keep rating as a separate nested value builder.
 
+## QuotationSchema — agreed
+
+- Proposed signature: `QuotationSchema::create(string $identifier, string $text)`.
+- Generate a stable site-scoped `#quotation-{identifier}` ID; the identifier is mandatory and must be unique for each testimonial/quotation within the site. In applications, derive it from a stable source record identifier (e.g. `'testimonial-' . $testimonial->ID`), not a slideshow position or the current page.
+- Typical use case: attributed testimonial quotes in reusable content elements or slideshows, potentially displayed on multiple pages. The same quotation must retain the same entity ID wherever it appears.
+- Attribution is optional: retain `setAuthor(string $name)` for a plain name and `setAuthorReference(string $entityID)` for an existing entity. Retain `setCitation()` and `setIsPartOf()` as explicit setters.
+- Do not automatically associate quotations with the page where they are displayed.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
