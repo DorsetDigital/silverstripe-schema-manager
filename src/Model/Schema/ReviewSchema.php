@@ -2,13 +2,16 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
+
 class ReviewSchema extends Schema
 {
-    public static function create(string $id, string $body, string $author): static
+    public static function create(string $identifier, string $body, string $author, string $itemReviewedID): static
     {
         return new static([
-            '@type' => 'Review', '@id' => $id, 'reviewBody' => $body,
+            '@type' => 'Review', '@id' => SchemaIDs::forEntity('review', $identifier), 'reviewBody' => $body,
             'author' => ['@type' => 'Person', 'name' => $author],
+            'itemReviewed' => ['@id' => $itemReviewedID],
         ]);
     }
 
