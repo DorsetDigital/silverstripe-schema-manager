@@ -5,18 +5,12 @@ namespace DorsetDigital\SchemaManager\Model\Schema;
 use DorsetDigital\SchemaManager\Control\SchemaIDs;
 class ProductSchema extends Schema
 {
-    public static function create(string $url, string $name, ?string $description = null): static
+    public static function create(string $identifier, string $name, ?string $description = null): static
     {
-        $url = rtrim($url, '/') . '/';
-
         $data = [
             '@type' => 'Product',
-            '@id' => $url . '#product',
-            'url' => $url,
+            '@id' => SchemaIDs::forEntity('product', $identifier),
             'name' => $name,
-            'isPartOf' => [
-                '@id' => SchemaIDs::forPageURL($url, 'webpage'),
-            ],
         ];
 
         if ($description) {
@@ -24,6 +18,17 @@ class ProductSchema extends Schema
         }
 
         return new static($data);
+    }
+
+    public function setURL(?string $url): static
+    {
+        if ($url !== null) {
+            $this->data['url'] = $url;
+        } else {
+            unset($this->data['url']);
+        }
+
+        return $this;
     }
 
     public function setImage(?string $url): static
