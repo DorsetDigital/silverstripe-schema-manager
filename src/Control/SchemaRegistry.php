@@ -70,18 +70,7 @@ class SchemaRegistry
             E_USER_DEPRECATED
         );
 
-        if (!$pageURL) {
-            $page = Director::get_current_page();
-
-            if ($page && method_exists($page, 'AbsoluteLink')) {
-                $pageURL = $page->AbsoluteLink();
-            } else {
-                $pageURL = Director::absoluteURL(Controller::curr()->getRequest()->getURL());
-            }
-        }
-
-        $schema = FAQPageSchema::create($pageURL)->addQuestion($question, $answer);
-        self::add($schema);
+        FAQPageHelper::addQuestion($question, $answer, $pageURL);
     }
 
     public static function addBreadCrumbs(
