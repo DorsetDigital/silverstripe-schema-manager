@@ -13,7 +13,8 @@ $rating = AggregateRatingSchema::create(4.7, 82, 54)
     ->setScale(5, 1);
 
 SchemaRegistry::add(
-    ProductSchema::create($url, $product->Title)
+    ProductSchema::create('product-' . $product->ID, $product->Title)
+        ->setURL($url)
         ->update(['aggregateRating' => $rating->toArray()])
         ->setMainEntityOfPage($url)
 );
