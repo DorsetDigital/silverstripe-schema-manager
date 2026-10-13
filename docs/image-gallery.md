@@ -45,3 +45,14 @@ $gallerySchema = ImageGallerySchema::create(
 This produces a site-scoped entity ID ending in `#imagegallery-gallery-42`.
 
 The builder also inherits `Schema::update()` for additional Schema.org properties.
+
+## Public builder methods
+
+Methods declared by this builder, in addition to the [shared Schema methods](developer-api.md#shared-schema-builder-methods).
+
+| Method and parameters | Purpose |
+| --- | --- |
+| `public static function create(string $identifier, ?string $name = null, ?string $description = null)` | Create a new schema entity. |
+| `public function setURL(?string $url)` | Set the u r l property. |
+| `public function addImage( string $url, ?string $name = null, ?string $description = null, ?int $width = null, ?int $height = null )` | Add an item to the image collection. |
+| `public function setThumbnail(?string $url)` | Set the thumbnail property. |
