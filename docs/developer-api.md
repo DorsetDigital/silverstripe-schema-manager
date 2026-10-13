@@ -220,4 +220,18 @@ The module is deliberately split into small responsibilities:
 
 This keeps the public API small while leaving room for additional schema types and project-specific extensions.
 
+## Shared Schema builder methods
 
+All typed builders extend `DorsetDigital\SchemaManager\Model\Schema\Schema` and inherit these public methods. Builder-specific methods are documented on their individual schema pages.
+
+| Method | Description |
+| --- | --- |
+| `__construct(array $data)` | Initialise an entity from its raw schema properties; normally use the builder's `create()` factory instead. |
+| `getEntityID(): string` | Return the entity's complete `@id`. |
+| `toArray(): array` | Return the entity's schema properties as an array. |
+| `setMainEntityOfPage(string $pageURL): static` | Mark this entity as the primary subject of a page. |
+| `isMainEntityOfPage(string $pageURL): bool` | Check whether this entity declares that page as its primary page. |
+| `setIsPartOfPage(string $pageURL): static` | Mark this entity as supporting content belonging to a page. |
+| `update(array $data): static` | Add or overwrite schema properties from an array. |
+
+These methods are inherited by all builders, including `RatingSchema` and `AggregateRatingSchema`, although those two are normally used as nested value objects rather than standalone registered entities.
