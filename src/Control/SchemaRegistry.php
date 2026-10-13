@@ -52,8 +52,6 @@ class SchemaRegistry
 
         self::$schemas[$id] = $schema;
         self::addEntity($id, $incoming);
-        // Synchronise duplicate registrations without mutating the incoming
-        // builder's page relationships; resolved graph data remains separate.
     }
 
     public static function addEntity(string $id, array $data): void
@@ -143,12 +141,6 @@ class SchemaRegistry
 
     private static function resolveRelationships(): void
     {
-        // Start with the registered entities on each read; relationship
-        // resolution must not accumulate stale demotions between reads.
-        foreach (self::$schemas as $id => $schema) {
-            self::$entities[$id] = array_replace_recursive(self::$entities[$id] ?? [], $schema->toArray());
-        }
-
         foreach (self::$schemas as $webPage) {
             if (!$webPage instanceof WebPageSchema) {
                 continue;
@@ -169,7 +161,7 @@ class SchemaRegistry
                     continue;
                 }
 
-                $data = $schema->toArray();
+                $data = self::$entities[$schema->getEntityID()] ?? $schema->toArray();
                 $mainRef = $data['mainEntityOfPage']['@id'] ?? null;
                 $partRef = $data['isPartOf']['@id'] ?? null;
 
@@ -212,13 +204,9 @@ class SchemaRegistry
                 unset($data['isPartOf']);
                 $data['mainEntityOfPage'] = ['@id' => $webPageID];
                 self::$entities[$winnerID] = $data;
-                $webPage->setMainEntity($winnerID);
+                self::$entities[$webPageID]['mainEntity'] = ['@id' => $winnerID];
             }
 
-            self::$entities[$webPageID] = array_replace_recursive(
-                self::$entities[$webPageID] ?? [],
-                $webPage->toArray()
-            );
         }
     }
 
