@@ -88,6 +88,15 @@ The relationship audit identified behaviour that must be preserved when changing
 - `setProvider()` accepts an explicit entity ID even when automatic organisation schema is disabled (e.g. a custom organisation or LocalBusiness). Do not require registry membership for a reference.
 - The constructor checks the existing SchemaManager configuration; do not introduce another configuration setting for this behaviour.
 
+## EventSchema — agreed
+
+- `EventSchema::create(string $identifier, string $name, string $startDate, ?string $description = null)` generates a stable, site-scoped `#event-{identifier}` entity ID, independent of the rendering page.
+- Add optional `setURL()` for the event's canonical public URL; it does not automatically establish page relationships.
+- Preserve explicit `setMainEntityOfPage($pageURL)` and `setIsPartOfPage($pageURL)`. No automatic WebPage or organisation relationships.
+- Keep existing `setEndDate()`, `setImage()`, `setEventStatus()`, `setAttendanceMode()`, `setOffer()`, and `setLocation(string $name, ?string $address = null)` functionality.
+- Allow nullable reference setters `setOrganizer(?string $id)`, `setPerformer(?string $id)`, and `setLocationReference(?string $id)`; passing `null` removes the corresponding relationship.
+- Do not automatically set the event organiser to the site's global organisation; the site owner is not necessarily the organiser.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
