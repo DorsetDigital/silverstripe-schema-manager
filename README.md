@@ -58,36 +58,63 @@ DorsetDigital\SchemaManager\Service\SchemaManager:
 
 ## Supported schema types
 
-Detailed examples and configuration are kept in separate documentation:
+Schema Manager includes typed builders for the following Schema.org entities. Builders can be registered with `SchemaRegistry::add()`; they are not limited to the automatically generated schema.
 
-- [Site schema](docs/site-schema.md) — `Organization` and `WebSite`
-- [Breadcrumbs](docs/breadcrumbs.md) — automatic and manual `BreadcrumbList`
-- [FAQPage](docs/faq.md) — questions and accepted answers, including multiple FAQ sections on one page
-- [ImageGallery](docs/image-gallery.md) — image collections and `ImageObject` metadata
-- [Product](docs/product.md) — products, offers, stock and brands
-- [Service](docs/service.md) — services, providers and pricing
-- [JobPosting](docs/job-posting.md) — vacancies, locations and salaries
-- [BlogPosting](docs/blog-posting.md) — optional Silverstripe Blog integration
-
-Page-level typed builders link to their `WebPage` with `isPartOf` by default. When an entity is the primary subject of a dedicated page, `setMainEntityOfPage($pageURL)` promotes that relationship explicitly.
-
-All typed builders inherit `Schema::update()`, allowing projects to add less common Schema.org properties without the module needing to model every possible field.
-
-## Using the schema builders
-
-The module provides typed PHP builders for structured content. Create a builder from the relevant page URL and content, customise it using its fluent methods, then register it with `SchemaRegistry::add()`. Builders are intended to work with your project's existing data models; they do not create CMS fields or data records for products, jobs, galleries or FAQs.
-
-| Builder | Purpose | Common methods |
+| Type / builder | What it describes | Guide or source |
 | --- | --- | --- |
-| `FAQPageSchema` | Questions and accepted answers | `create($url)`, `addQuestion($question, $answer)` |
-| `ImageGallerySchema` | Image collections and image metadata | `create($url, $name)`, `addImage(...)`, `setThumbnail($url)` |
-| `ProductSchema` | Products and their offers | `create($url, $name, $description)`, `setImage()`, `setSKU()`, `setBrand()`, `setOffer()` |
-| `ServiceSchema` | Services and providers | `create($url, $name, $description)`, `setAreaServed()`, `setProvider()`, `setOffer()` |
-| `JobPostingSchema` | Vacancies and employment details | `create($url, $title, $description)`, `setDatePosted()`, `setValidThrough()`, `setJobLocation()`, `setRemote()`, `setBaseSalaryRange()` |
-| `BlogPostingSchema` | Silverstripe Blog posts (opt-in) | `fromBlogPost($post)` |
-| `OrganisationSchema`, `WebsiteSchema`, `WebPageSchema`, `BreadcrumbListSchema` | Core site/page entities, normally generated automatically | See the site and breadcrumb guides |
+| `Organization` (`OrganisationSchema`) and `WebSite` (`WebsiteSchema`) | Site-wide organisation and website details | [Site schema](docs/site-schema.md) |
+| `WebPage` (`WebPageSchema`) | Standard page metadata, automatically generated | [Page schema](src/Model/Schema/WebPageSchema.php) |
+| `BreadcrumbList` (`BreadcrumbListSchema`) | Page hierarchy and navigation | [Breadcrumbs](docs/breadcrumbs.md) |
+| `FAQPage` (`FAQPageSchema`) | Questions and accepted answers from one or several sections | [FAQPage](docs/faq.md) |
+| `ImageGallery` (`ImageGallerySchema`) | Galleries and their `ImageObject` entries | [ImageGallery](docs/image-gallery.md) |
+| `Product` (`ProductSchema`) | Products, offers, availability and brands | [Product](docs/product.md) |
+| `Service` (`ServiceSchema`) | Services, providers, areas served and pricing | [Service](docs/service.md) |
+| `JobPosting` (`JobPostingSchema`) | Vacancies, locations, remote working and salaries | [JobPosting](docs/job-posting.md) |
+| `BlogPosting` (`BlogPostingSchema`) | Blog posts, dates, images and publisher details (opt-in) | [BlogPosting](docs/blog-posting.md) |
+| `Event` (`EventSchema`) | Dates, venues, organisers, performers and offers | [Event builder](src/Model/Schema/EventSchema.php) |
+| `Person` (`PersonSchema`) | People, job titles, employer, profiles and credentials | [Person builder](src/Model/Schema/PersonSchema.php) |
+| `LocalBusiness` (`LocalBusinessSchema`) | Business locations, addresses, coordinates and opening hours | [LocalBusiness builder](src/Model/Schema/LocalBusinessSchema.php) |
+| `Review` (`ReviewSchema`) | Reviews and testimonials, including author, rating and reviewed entity | [Review builder](src/Model/Schema/ReviewSchema.php) |
+| `Rating` (`RatingSchema`) | Individual rating scores | [Rating builder](src/Model/Schema/RatingSchema.php) |
+| `AggregateRating` (`AggregateRatingSchema`) | Overall rating value and rating/review counts | [AggregateRating builder](src/Model/Schema/AggregateRatingSchema.php) |
+| `Quotation` (`QuotationSchema`) | Quotations and attributed testimonials | [Quotation builder](src/Model/Schema/QuotationSchema.php) |
+| Configurable type (`GenericSchema`) | Custom schema assembled from page annotation definitions | [Page annotations](docs/page-annotations.md) |
 
-For example, a dedicated product page can register its product as the main subject:
+The following quick reference covers the main builder entry points. Each builder extends `Schema` and supports `update(array $data)` for additional properties.
+
+| Builder | Creation and example methods |
+| --- | --- |
+| `EventSchema` | `create($url, $name, $startDate, $description)`, `setEndDate()`, `setLocation()`, `setOrganizer()`, `setOffer()` |
+| `PersonSchema` | `create($id, $name)`, `setJobTitle()`, `setWorksFor()`, `setSameAs()`, `setCredentials()` |
+| `LocalBusinessSchema` | `create($id, $name, $url)`, `setAddress()`, `setGeo()`, `setOpeningHours()`, `setPriceRange()` |
+| `ReviewSchema` | `create($id, $body, $author)`, `setItemReviewed()`, `setRating()`, `setDatePublished()` |
+| `RatingSchema` | `create($value, $best, $worst)` |
+| `AggregateRatingSchema` | `create($value, $ratingCount, $reviewCount)`, `setScale()` |
+| `QuotationSchema` | `create($id, $text)`, `setAuthor()`, `setAuthorReference()`, `setCitation()` |
+
+**Example: register a review with a rating**
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\RatingSchema;
+use DorsetDigital\SchemaManager\Model\Schema\ReviewSchema;
+
+SchemaRegistry::add(
+    ReviewSchema::create(
+        'https://example.com/reviews/#review-123',
+        'Helpful and professional service.',
+        'Example customer'
+    )
+        ->setItemReviewed('https://example.com/services/#service')
+        ->setRating(RatingSchema::create(5, 5, 1))
+);
+```
+
+`RatingSchema` and `AggregateRatingSchema` are value objects without their own `@id`, so use them as nested properties of another entity rather than registering them directly in the request registry.
+
+### Product, FAQ, gallery and other page builders
+
+`ProductSchema`, `ServiceSchema`, `JobPostingSchema`, `FAQPageSchema` and `ImageGallerySchema` provide fluent methods tailored to their content. For example:
 
 ```php
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
@@ -105,9 +132,7 @@ SchemaRegistry::add(
 );
 ```
 
-A builder normally links to the page's `WebPage` using `isPartOf`. Call `setMainEntityOfPage($url)` when the entity is the primary subject of a dedicated page. All builders inherit `update(array $data)` for additional Schema.org properties.
-
-Multiple `FAQPageSchema` objects registered for the same page URL are combined into a single FAQ entity, allowing independent components to contribute questions. See the individual guides above for full examples and builder-specific options.
+Builders normally reference a page's `WebPage` with `isPartOf`. Use `setMainEntityOfPage($url)` where the entity is the primary subject of a dedicated page. Multiple `FAQPageSchema` objects for the same URL combine questions into one `FAQPage` entity.
 
 ## Optional Silverstripe Blog integration
 
