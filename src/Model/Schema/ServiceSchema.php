@@ -23,10 +23,24 @@ class ServiceSchema extends Schema
 
     public function setURL(?string $url): static
     {
+        $previousURL = $this->data['url'] ?? null;
         if ($url !== null) {
             $this->data['url'] = $url;
         } else {
             unset($this->data['url']);
+        }
+
+        // Keep an implicitly inherited Offer URL in sync with the canonical
+        // URL, without overriding an explicitly supplied Offer URL.
+        if (isset($this->data['offers'])) {
+            $offerURL = $this->data['offers']['url'] ?? null;
+            if ($offerURL === null || $offerURL === $previousURL) {
+                if ($url !== null) {
+                    $this->data['offers']['url'] = $url;
+                } else {
+                    unset($this->data['offers']['url']);
+                }
+            }
         }
 
         return $this;
