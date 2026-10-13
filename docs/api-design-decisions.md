@@ -69,6 +69,15 @@ The relationship audit identified behaviour that must be preserved when changing
 - A reusable entity's stable `@id` and the WebPage it is displayed on are distinct concepts. Do not silently derive entity identity from the rendering page.
 - The current registry keys entities by `@id` and merges duplicate IDs. It also stores typed schemas by ID, with later registrations replacing earlier typed instances (except FAQ special handling). Test duplicate/reused entities to ensure no unintended relationship loss or cross-page assumptions.
 
+## Developer-controlled page relationships — agreed
+
+- Entity builders should have clear, consistent, documented methods for explicitly declaring whether an entity is the main entity of a page (`setMainEntityOfPage($pageURL)`) or is part of a page (`setIsPartOfPage($pageURL)`).
+- The developer is responsible for deciding which relationship applies in each rendering context. Constructors must not silently declare an entity to be the page's main entity.
+- Stable entity `@id`, canonical `url`, and the URL of a page displaying the entity are separate concepts; `setURL()` must not implicitly create a page relationship.
+- Keep the existing registry's main-entity conflict resolution and make duplicate registrations of the same entity ID deterministic, without silently losing valid relationships.
+- Document practical examples for product listings, dedicated product pages, reusable elements, and duplicate registration, and add regression tests before implementation is considered complete.
+- This is an agreed API/design principle; exact duplicate-merge precedence still needs a specific design decision.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
