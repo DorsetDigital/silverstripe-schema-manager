@@ -10,7 +10,7 @@ abstract class Schema
     {
     }
 
-    public function getID(): string
+    public function getEntityID(): string
     {
         return (string) ($this->data['@id'] ?? '');
     }
