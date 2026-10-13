@@ -13,7 +13,7 @@ $organisationID = SchemaIDs::organisation();
 $websiteID = SchemaIDs::website();
 $pageID = SchemaIDs::webPage($page);
 $breadcrumbID = SchemaIDs::breadcrumb($page);
-$personID = SchemaIDs::forPageURL($page->AbsoluteLink(), 'person');
+$personID = 'member-' . $member->ID;
 
 $reference = SchemaIDs::ref($personID); // ['@id' => '...']
 ```
