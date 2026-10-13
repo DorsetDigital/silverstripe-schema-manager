@@ -63,8 +63,8 @@ The relationship audit identified behaviour that must be preserved when changing
 - `SchemaRegistry::resolveRelationships()` selects the WebPage's main entity and demotes a previous competing main entity to `isPartOf`. Preserve this coexistence behaviour and cover it with tests.
 - `ProductSchema` currently sets `isPartOf` to its constructor URL's WebPage and sets its own `url`. The product guide explicitly uses `setMainEntityOfPage()` for a dedicated product page. A new site-scoped constructor must retain the ability to explicitly set either relationship. Do **not** automatically set `mainEntityOfPage`.
 - `ProductSchema::setOffer()` currently defaults an Offer URL to the Product's `url`. Preserve this when introducing optional `setURL()`, and test call-order behaviour.
-- `ServiceSchema` currently defaults `provider` to the global organisation and `isPartOf` to the constructor URL's WebPage. Retain default provider unless separately agreed otherwise; preserve explicit page-relationship APIs. **Service constructor/automatic page-link changes are not yet agreed.**
-- `JobPostingSchema` similarly defaults `hiringOrganization` and page `isPartOf`. `BlogPostingSchema` links to the WebSite and organisation and explicitly marks its post as page main entity. Review these separately before changing.
+- `ServiceSchema` previously defaulted provider and page relationships. The new generic builder does neither; explicit setters preserve these capabilities.
+- `JobPostingSchema` previously defaulted hiring organisation and page `isPartOf`; the new generic builder does neither. `BlogPostingSchema` links to the WebSite and organisation and explicitly marks its post as page main entity. Review these separately before changing.
 - `WebPageSchema` points to `WebSite`, and the registry resolves breadcrumb and main entity references. `FAQPageSchema` merges questions from multiple sections under one page-scoped ID. Preserve both.
 - A reusable entity's stable `@id` and the WebPage it is displayed on are distinct concepts. Do not silently derive entity identity from the rendering page.
 - The current registry keys entities by `@id` and merges duplicate IDs. It also stores typed schemas by ID, with later registrations replacing earlier typed instances (except FAQ special handling). Test duplicate/reused entities to ensure no unintended relationship loss or cross-page assumptions.
@@ -83,10 +83,8 @@ The relationship audit identified behaviour that must be preserved when changing
 - `ServiceSchema::create(string $identifier, string $name, ?string $description = null)` creates a site-scoped, page-independent `#service-{identifier}` entity ID.
 - Optional `setURL()` supplies a canonical service URL without implicitly creating a page relationship. Keep `setAreaServed()` and `setOffer()`, including Offer URL fallback when the Service URL is set.
 - Preserve explicit `setMainEntityOfPage()` and `setIsPartOfPage()` relationship handling; no automatic page relationship from the constructor.
-- **Conditional default provider:** the constructor sets `provider` to `SchemaIDs::organisation()` only when `SchemaManager::config()->get('automatic_organisation_schema')` is enabled. If automatic organisation schema is disabled, omit `provider` by default rather than emit a potentially dangling reference.
-- `setProvider(?string $id)` overrides the default with an explicit entity ID; passing `null` removes the provider relationship. This allows a Service without a provider even when automatic organisation schema is enabled.
-- `setProvider()` accepts an explicit entity ID even when automatic organisation schema is disabled (e.g. a custom organisation or LocalBusiness). Do not require registry membership for a reference.
-- The constructor checks the existing SchemaManager configuration; do not introduce another configuration setting for this behaviour.
+- The generic builder does **not** set a default provider or read SchemaManager configuration. Developers explicitly use `setProvider(?string $id)` to reference an organisation or remove a reference with `null`. Document this clearly alongside the available schema properties and setters.
+- Integrations may supply a provider when appropriate; do not assume the site owner provides every service.
 
 ## EventSchema — agreed
 
@@ -102,8 +100,8 @@ The relationship audit identified behaviour that must be preserved when changing
 - `JobPostingSchema::create(string $identifier, string $title, ?string $description = null)` generates a stable, site-scoped `#jobposting-{identifier}` entity ID, independent of the page where the vacancy is shown.
 - Add optional `setURL()` for the vacancy's canonical public URL. Setting it does **not** create or change a WebPage relationship.
 - **Intentional change from the old constructor:** the builder no longer automatically assigns `isPartOf` from a constructor URL. Developers explicitly call `setIsPartOfPage($currentPageURL)` for a supporting listing/promo or `setMainEntityOfPage($currentPageURL)` for the vacancy's dedicated page. Keep the base methods and registry resolution, not the old automatic assignment.
-- Default `hiringOrganization` to `SchemaIDs::organisation()` **only** when `SchemaManager::config()->get('automatic_organisation_schema')` is enabled. Otherwise omit it.
-- Change `setHiringOrganization(?string $id)` to accept an explicit entity ID or `null` to remove the relationship, regardless of automatic organisation setting.
+- The generic builder does **not** default `hiringOrganization` or read SchemaManager configuration. Developers explicitly set the hiring organisation; integrations can choose an appropriate default when applicable.
+- `setHiringOrganization(?string $id)` accepts an explicit entity ID or `null` to remove the relationship. Document the available setters and their purposes.
 - Preserve existing date, employment type, location, remote-work and salary methods.
 - Documentation must be **simple and explicit**, with practical examples of a vacancy on its dedicated page, in a general jobs listing, and in reusable homepage/promotional content. Clearly distinguish stable entity ID, canonical URL, and relationship to the current page. Apply the same clarity to Product and other reusable builders; avoid describing the removed automatic `isPartOf` assignment as 'preserved'.
 
@@ -182,7 +180,17 @@ The relationship audit identified behaviour that must be preserved when changing
 - Validate explicitly supplied scale boundaries and rating values against them, and reject negative rating/review counts. Preserve the distinction between `ratingCount` and `reviewCount`; never infer one from the other.
 - Support straightforward nesting via `toArray()` (including `ReviewSchema::setRating()`). Document examples and test valid/invalid values, optional scales, and nested output.
 
-## Still to review
+## Shared infrastructure — final architectural decisions
 
-- WebPageSchema, BreadcrumbListSchema, GenericSchema, RatingSchema and AggregateRatingSchema: remaining API and integration review.
-- Audit and update docs/examples/tests and internal callers as implementation proceeds.
+- `SchemaIDs::forEntity(string $type, string $identifier)` is a small shared utility for site-scoped IDs: use the absolute base URL, normalise slashes, construct consistent type-prefixed fragments, and reject empty or malformed identifiers. No additional factory/service abstraction.
+- Keep the existing automatic global and page-specific ID helpers. The extension selects conventional `#organisation`, `#website`, `#webpage` and `#breadcrumb` IDs; generic builders remain developer-controlled.
+- Resolve `setMainEntityOfPage($pageURL)` and `setIsPartOfPage($pageURL)` by matching a registered WebPage's canonical URL and using its actual entity ID, supporting custom WebPage IDs. When no matching WebPage is registered, fall back to the existing URL-derived `#webpage` ID.
+- Keep resolution simple: the normal use is a small page graph assembled once per request. A straightforward registry lookup/iteration is sufficient; no extra indexes, caching or relationship-management subsystem.
+- Preserve the existing competing-main-entity behaviour and deterministic duplicate-merge precedence. Do not introduce a graph immutability refactor solely to address hypothetical repeated graph generation.
+- Documentation should describe the available schema properties and fluent setters, especially explicit organisation/provider relationships; add targeted tests for custom WebPage IDs, default IDs, fallback and registration order.
+- `GenericSchema` is reviewed and unchanged: its existing array-based adapter role supports primarily internal/page-specific schemas.
+
+## Implementation follow-up
+
+- Audit and update internal callers, docs, examples and tests as implementation proceeds.
+- No outstanding builder API design review; proceed with implementation planning.
