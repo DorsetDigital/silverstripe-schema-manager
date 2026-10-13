@@ -113,7 +113,11 @@ class SchemaControllerExtension extends Extension
     {
         $schema = WebPageSchema::create((string) $page->ID, $page->Title)
             ->setURL(rtrim($page->AbsoluteLink(), '/') . '/')
-            ->setIsPartOf(SchemaIDs::website());
+            ;
+
+        if (SchemaManager::config()->get('automatic_website_schema')) {
+            $schema->setIsPartOf(SchemaIDs::website());
+        }
 
         $schema->update(['@id' => SchemaIDs::webPage($page)]);
         if ($page->MetaDescription) $schema->setDescription($page->MetaDescription);
