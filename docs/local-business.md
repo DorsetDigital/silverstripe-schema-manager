@@ -11,10 +11,10 @@ $url = $page->AbsoluteLink();
 
 SchemaRegistry::add(
     LocalBusinessSchema::create(
-        SchemaIDs::forPageURL($url, 'localbusiness'),
-        'Example Branch',
-        $url
+        'branch-main',
+        'Example Branch'
     )
+        ->setURL($url)
         ->setParentOrganization(SchemaIDs::organisation())
         ->setTelephone('+44 20 0000 0000')
         ->setAddress([
