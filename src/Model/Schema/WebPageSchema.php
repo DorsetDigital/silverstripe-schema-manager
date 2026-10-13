@@ -36,10 +36,10 @@ class WebPageSchema extends Schema
         return new static($data);
     }
 
-    public function setBreadcrumb(?Schema $schema): static
+    public function setBreadcrumb(?string $entityID): static
     {
-        if ($schema) {
-            $this->data['breadcrumb'] = ['@id' => $schema->getID()];
+        if ($entityID !== null) {
+            $this->data['breadcrumb'] = ['@id' => $entityID];
         } else {
             unset($this->data['breadcrumb']);
         }
@@ -47,10 +47,10 @@ class WebPageSchema extends Schema
         return $this;
     }
 
-    public function setMainEntity(?Schema $schema): static
+    public function setMainEntity(?string $entityID): static
     {
         if ($schema) {
-            $this->data['mainEntity'] = ['@id' => $schema->getID()];
+            $this->data['mainEntity'] = ['@id' => $entityID];
         } else {
             unset($this->data['mainEntity']);
         }
