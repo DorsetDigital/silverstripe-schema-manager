@@ -6,21 +6,12 @@ use DorsetDigital\SchemaManager\Control\SchemaIDs;
 
 class JobPostingSchema extends Schema
 {
-    public static function create(string $url, string $title, ?string $description = null): static
+    public static function create(string $identifier, string $title, ?string $description = null): static
     {
-        $url = rtrim($url, '/') . '/';
-
         $data = [
             '@type' => 'JobPosting',
-            '@id' => $url . '#jobposting',
-            'url' => $url,
+            '@id' => SchemaIDs::forEntity('jobposting', $identifier),
             'title' => $title,
-            'isPartOf' => [
-                '@id' => SchemaIDs::forPageURL($url, 'webpage'),
-            ],
-            'hiringOrganization' => [
-                '@id' => SchemaIDs::organisation(),
-            ],
         ];
 
         if ($description) {
@@ -30,11 +21,17 @@ class JobPostingSchema extends Schema
         return new static($data);
     }
 
-    public function setHiringOrganization(string $id): static
+    public function setURL(?string $url): static
     {
-        $this->data['hiringOrganization'] = [
-            '@id' => $id,
-        ];
+        if ($url !== null) $this->data['url'] = $url;
+        else unset($this->data['url']);
+        return $this;
+    }
+
+    public function setHiringOrganization(?string $id): static
+    {
+        if ($id !== null) $this->data['hiringOrganization'] = ['@id' => $id];
+        else unset($this->data['hiringOrganization']);
 
         return $this;
     }
