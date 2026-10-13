@@ -20,8 +20,8 @@ final class SchemaIDs
     public static function forEntity(string $type, string $identifier): string
     {
         foreach (['type' => $type, 'identifier' => $identifier] as $label => $value) {
-            if (!preg_match('/\\A[a-zA-Z0-9][a-zA-Z0-9_-]*\\z/D', $value)) {
-                throw new \\InvalidArgumentException(
+            if (!preg_match('/\A[a-zA-Z0-9][a-zA-Z0-9_-]*\z/D', $value)) {
+                throw new \InvalidArgumentException(
                     sprintf('Schema %s must contain only letters, numbers, hyphens or underscores and start with a letter or number.', $label)
                 );
             }
