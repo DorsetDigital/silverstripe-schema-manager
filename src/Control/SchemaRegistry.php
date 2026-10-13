@@ -176,16 +176,7 @@ class SchemaRegistry
                 if ($schema->isMainEntityOfPage($pageURL)
                     || ($schema->toArray()['mainEntityOfPage']['@id'] ?? null) === $webPageID) {
                     if ($mainEntity instanceof Schema) {
-                        $previousMainID = $mainEntity->getEntityID();
                         $mainEntity->setIsPartOfPage($pageURL);
-                        // When a custom WebPage ID has already been resolved,
-                        // the base setter's conventional ID may not match.
-                        $previousData = $mainEntity->toArray();
-                        if (($previousData['mainEntityOfPage']['@id'] ?? null) === $webPageID) {
-                            unset($previousData['mainEntityOfPage']);
-                            $previousData['isPartOf'] = ['@id' => $webPageID];
-                            self::$entities[$previousMainID] = $previousData;
-                        }
                     }
 
                     $mainEntity = $schema;
