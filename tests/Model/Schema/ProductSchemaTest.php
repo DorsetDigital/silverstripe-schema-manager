@@ -39,7 +39,7 @@ class ProductSchemaTest extends SapphireTest
     public function testProductCanBePromotedToMainEntityOfPage(): void
     {
         $schema = ProductSchema::create(
-            'https://example.com/products/example/',
+            'example',
             'Example product'
         )->setMainEntityOfPage('https://example.com/products/example/');
 
@@ -55,7 +55,7 @@ class ProductSchemaTest extends SapphireTest
     public function testProductSchemaCanBeExtended(): void
     {
         $schema = ProductSchema::create(
-            'https://example.com/products/example/',
+            'example',
             'Example product'
         )->update([
             'color' => 'Blue',
