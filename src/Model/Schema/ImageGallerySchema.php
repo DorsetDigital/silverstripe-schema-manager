@@ -2,21 +2,15 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
+
 class ImageGallerySchema extends Schema
 {
-    public static function create(string $url, ?string $name = null, ?string $description = null, ?string $identifier = null): static
+    public static function create(string $identifier, ?string $name = null, ?string $description = null): static
     {
-        $url = rtrim($url, '/') . '/';
-
-        $fragment = 'imagegallery' . ($identifier ? '-' . trim($identifier, '#-') : '');
-
         $data = [
             '@type' => 'ImageGallery',
-            '@id' => $url . '#' . $fragment,
-            'url' => $url,
-            'isPartOf' => [
-                '@id' => $url . '#webpage',
-            ],
+            '@id' => SchemaIDs::forEntity('imagegallery', $identifier),
             'hasPart' => [],
         ];
 
@@ -30,6 +24,8 @@ class ImageGallerySchema extends Schema
 
         return new static($data);
     }
+
+    public function setURL(?string $url): static { if ($url !== null) $this->data['url'] = $url; else unset($this->data['url']); return $this; }
 
     public function addImage(
         string $url,
@@ -66,8 +62,10 @@ class ImageGallerySchema extends Schema
 
     public function setThumbnail(?string $url): static
     {
-        if ($url) {
+        if ($url !== null) {
             $this->data['thumbnailUrl'] = $url;
+        } else {
+            unset($this->data['thumbnailUrl']);
         }
 
         return $this;
