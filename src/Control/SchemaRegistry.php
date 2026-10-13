@@ -52,7 +52,8 @@ class SchemaRegistry
 
         self::$schemas[$id] = $schema;
         self::addEntity($id, $incoming);
-        $schema->update(self::$entities[$id]);
+        // Synchronise duplicate registrations without mutating the incoming
+        // builder's page relationships; resolved graph data remains separate.
     }
 
     public static function addEntity(string $id, array $data): void
@@ -142,6 +143,12 @@ class SchemaRegistry
 
     private static function resolveRelationships(): void
     {
+        // Start with the registered entities on each read; relationship
+        // resolution must not accumulate stale demotions between reads.
+        foreach (self::$schemas as $id => $schema) {
+            self::$entities[$id] = array_replace_recursive(self::$entities[$id] ?? [], $schema->toArray());
+        }
+
         foreach (self::$schemas as $webPage) {
             if (!$webPage instanceof WebPageSchema) {
                 continue;
