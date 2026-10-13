@@ -71,13 +71,13 @@ Schema Manager includes typed builders for the following Schema.org entities. Bu
 | `Service` (`ServiceSchema`) | Services, providers, areas served and pricing | [Service](docs/service.md) |
 | `JobPosting` (`JobPostingSchema`) | Vacancies, locations, remote working and salaries | [JobPosting](docs/job-posting.md) |
 | `BlogPosting` (`BlogPostingSchema`) | Blog posts, dates, images and publisher details (opt-in) | [BlogPosting](docs/blog-posting.md) |
-| `Event` (`EventSchema`) | Dates, venues, organisers, performers and offers | [Event builder](src/Model/Schema/EventSchema.php) |
-| `Person` (`PersonSchema`) | People, job titles, employer, profiles and credentials | [Person builder](src/Model/Schema/PersonSchema.php) |
-| `LocalBusiness` (`LocalBusinessSchema`) | Business locations, addresses, coordinates and opening hours | [LocalBusiness builder](src/Model/Schema/LocalBusinessSchema.php) |
-| `Review` (`ReviewSchema`) | Reviews and testimonials, including author, rating and reviewed entity | [Review builder](src/Model/Schema/ReviewSchema.php) |
-| `Rating` (`RatingSchema`) | Individual rating scores | [Rating builder](src/Model/Schema/RatingSchema.php) |
-| `AggregateRating` (`AggregateRatingSchema`) | Overall rating value and rating/review counts | [AggregateRating builder](src/Model/Schema/AggregateRatingSchema.php) |
-| `Quotation` (`QuotationSchema`) | Quotations and attributed testimonials | [Quotation builder](src/Model/Schema/QuotationSchema.php) |
+| `Event` (`EventSchema`) | Dates, venues, organisers, performers and offers | [Event](docs/event.md) |
+| `Person` (`PersonSchema`) | People, job titles, employer, profiles and credentials | [Person](docs/person.md) |
+| `LocalBusiness` (`LocalBusinessSchema`) | Business locations, addresses, coordinates and opening hours | [LocalBusiness](docs/local-business.md) |
+| `Review` (`ReviewSchema`) | Reviews and testimonials, including author, rating and reviewed entity | [Reviews and testimonials](docs/review.md) |
+| `Rating` (`RatingSchema`) | Individual rating scores | [Reviews and ratings](docs/review.md) |
+| `AggregateRating` (`AggregateRatingSchema`) | Overall rating value and rating/review counts | [Aggregate ratings](docs/aggregate-rating.md) |
+| `Quotation` (`QuotationSchema`) | Quotations and attributed testimonials | [Quotations](docs/quotation.md) |
 | Configurable type (`GenericSchema`) | Custom schema assembled from page annotation definitions | [Page annotations](docs/page-annotations.md) |
 
 The following quick reference covers the main builder entry points. Each builder extends `Schema` and supports `update(array $data)` for additional properties.
@@ -135,6 +135,8 @@ SchemaRegistry::add(
 Builders normally reference a page's `WebPage` with `isPartOf`. Use `setMainEntityOfPage($url)` where the entity is the primary subject of a dedicated page. Multiple `FAQPageSchema` objects for the same URL combine questions into one `FAQPage` entity.
 
 ## Schema entities, IDs and relationships
+
+For a fuller explanation with examples, see the [schema entities and relationships guide](docs/schema-entities.md).
 
 Schema Manager uses a linked JSON-LD `@graph`, not isolated script blocks. Each registered entity with an `@id` can be referenced by other entities. The `SchemaIDs` helper centralises stable IDs so integrations can refer to the same organisation, website, page and breadcrumb without hard-coding fragments:
 
@@ -280,7 +282,7 @@ The page editor includes a **Schema** tab for one optional annotation per page. 
 
 ## Documentation
 
-The `docs/` directory contains detailed guides for the main integrations and schema types. Other builders are linked to their implementations in the supported-types table. The README covers the public API, entity relationships and configuration.
+The `docs/` directory contains detailed guides for the main integrations and schema types. The supported-types table links to dedicated guides, with the annotation-specific generic builder documented under page annotations. The README covers the public API, entity relationships and configuration.
 
 ## Project structure
 
