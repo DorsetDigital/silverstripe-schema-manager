@@ -3,7 +3,6 @@
 namespace DorsetDigital\SchemaManager\Tests\Model\Schema;
 
 use DorsetDigital\SchemaManager\Model\Schema\ServiceSchema;
-use SilverStripe\Control\Director;
 use SilverStripe\Dev\SapphireTest;
 
 class ServiceSchemaTest extends SapphireTest
@@ -20,7 +19,6 @@ class ServiceSchemaTest extends SapphireTest
             ->setOffer(95, 'GBP');
 
         $data = $schema->toArray();
-        $baseURL = rtrim(Director::absoluteBaseURL(), '/') . '/';
 
         $this->assertSame('Service', $data['@type']);
         $this->assertStringEndsWith('#service-example', $data['@id']);
@@ -35,7 +33,7 @@ class ServiceSchemaTest extends SapphireTest
     public function testServiceProviderCanBeOverridden(): void
     {
         $schema = ServiceSchema::create(
-            'https://example.com/services/example/',
+            'example',
             'Example service'
         )->setProvider('https://provider.example/#organisation');
 
