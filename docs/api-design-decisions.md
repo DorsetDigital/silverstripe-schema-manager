@@ -120,6 +120,15 @@ The relationship audit identified behaviour that must be preserved when changing
 - **Respect disabled author profiles.** Upstream Blog 5 `getDynamicCredits()` still creates a `URL` via `Blog::ProfileLink()` even when `BlogController.disable_profiles` is true; the config is enforced by the profile controller instead. Check `$post->getProfilesDisabled()` in our extension and do not set Person canonical URLs when true. Also omit URLs when absent or invalid. Test both config states, multiple linked members and name-only authors.
 - Keep documentation short and practical: demonstrate the generic builder separately from the opt-in BlogPost extension, and explain that applying the extension enables the integration across BlogPost pages. Test the mapping and relationships.
 
+## ImageGallerySchema — agreed
+
+- `ImageGallerySchema::create(string $identifier, ?string $name = null, ?string $description = null)` creates a stable site-scoped `#imagegallery-{identifier}` entity ID, independent of the page where the gallery appears.
+- Add optional `setURL()` for a dedicated canonical gallery URL. It does not establish a page relationship.
+- **Intentional constructor change:** no automatic `isPartOf` or other WebPage relationship. Developers explicitly call `setIsPartOfPage($pageURL)` for embedded/reused galleries or `setMainEntityOfPage($pageURL)` for dedicated gallery pages.
+- Keep `addImage(string $url, ?string $name = null, ?string $description = null, ?int $width = null, ?int $height = null)` and its nested `ImageObject` values under `hasPart`; do not require registering each image as a separate entity.
+- Keep `setThumbnail(?string $url)`, but make passing `null` remove an existing `thumbnailUrl` property, consistent with other nullable setters.
+- Documentation should show a practical gallery in a reusable element, with a stable element-derived ID and explicit page relationship.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
