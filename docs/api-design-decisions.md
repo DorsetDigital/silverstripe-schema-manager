@@ -97,6 +97,16 @@ The relationship audit identified behaviour that must be preserved when changing
 - Allow nullable reference setters `setOrganizer(?string $id)`, `setPerformer(?string $id)`, and `setLocationReference(?string $id)`; passing `null` removes the corresponding relationship.
 - Do not automatically set the event organiser to the site's global organisation; the site owner is not necessarily the organiser.
 
+## JobPostingSchema — agreed
+
+- `JobPostingSchema::create(string $identifier, string $title, ?string $description = null)` generates a stable, site-scoped `#jobposting-{identifier}` entity ID, independent of the page where the vacancy is shown.
+- Add optional `setURL()` for the vacancy's canonical public URL. Setting it does **not** create or change a WebPage relationship.
+- **Intentional change from the old constructor:** the builder no longer automatically assigns `isPartOf` from a constructor URL. Developers explicitly call `setIsPartOfPage($currentPageURL)` for a supporting listing/promo or `setMainEntityOfPage($currentPageURL)` for the vacancy's dedicated page. Keep the base methods and registry resolution, not the old automatic assignment.
+- Default `hiringOrganization` to `SchemaIDs::organisation()` **only** when `SchemaManager::config()->get('automatic_organisation_schema')` is enabled. Otherwise omit it.
+- Change `setHiringOrganization(?string $id)` to accept an explicit entity ID or `null` to remove the relationship, regardless of automatic organisation setting.
+- Preserve existing date, employment type, location, remote-work and salary methods.
+- Documentation must be **simple and explicit**, with practical examples of a vacancy on its dedicated page, in a general jobs listing, and in reusable homepage/promotional content. Clearly distinguish stable entity ID, canonical URL, and relationship to the current page. Apply the same clarity to Product and other reusable builders; avoid describing the removed automatic `isPartOf` assignment as 'preserved'.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
