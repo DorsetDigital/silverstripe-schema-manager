@@ -47,6 +47,14 @@ This document records agreed decisions for the upcoming breaking API revision. *
 - Attribution is optional: retain `setAuthor(string $name)` for a plain name and `setAuthorReference(string $entityID)` for an existing entity. Retain `setCitation()` and `setIsPartOf()` as explicit setters.
 - Do not automatically associate quotations with the page where they are displayed.
 
+## ProductSchema — agreed for this release
+
+- Keep the Product builder simple for this release; product variants are explicitly deferred.
+- Proposed constructor: `ProductSchema::create(string $identifier, string $name, ?string $description = null)`, generating a stable site-scoped `#product-{identifier}` entity ID. The identifier is mandatory and independent of the page displaying the product.
+- Add an optional `setURL()` for a stable, dedicated product page, distinct from its entity ID. Keep existing image, SKU, brand and offer setters.
+- **Future compatibility requirement:** The API and generated ID must not assume that a product can only ever have one variant. Preserve stable product identity when variants are introduced; do not encode a particular SKU, price, or variant into the parent product ID by default. Variants can later have their own IDs and relationships to the product without requiring a breaking change to this constructor.
+- Do not implement variants in this release; assess future variant modelling separately.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
