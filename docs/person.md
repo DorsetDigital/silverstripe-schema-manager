@@ -7,7 +7,7 @@ use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use DorsetDigital\SchemaManager\Model\Schema\PersonSchema;
 
-$personID = SchemaIDs::forPageURL($profile->AbsoluteLink(), 'person');
+$personID = 'member-' . $profile->ID;
 
 SchemaRegistry::add(
     PersonSchema::create($personID, $profile->Title)
