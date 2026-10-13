@@ -154,6 +154,16 @@ The relationship audit identified behaviour that must be preserved when changing
 - Preserve the primary website's established `SchemaIDs::website()` (`#website`) identity and references through the same shared internal global-ID mechanism as the primary organisation. Do not expose special public builder constructors solely for automatic entities.
 - Keep integration logic in extensions, schema construction in builders, and entity registration in the registry. Document and test the distinction between a normal additional website and the automatic primary website.
 
+## WebPageSchema — agreed
+
+- Standardise the generic builder as `WebPageSchema::create(string $identifier, string $name)`, generating a stable site-scoped `#webpage-{identifier}` ID. The developer controls the identifier; the builder must not infer it from the URL or require a Silverstripe SiteTree record.
+- Expose optional `setURL()`, description, published/modified date, `setIsPartOf(?string $websiteEntityID)`, `setBreadcrumb(?string $breadcrumbEntityID)` and `setMainEntity(?string $entityID)`. Relationship setters accept JSON-LD entity ID strings, not Schema objects; nullable values remove relationships.
+- Move SiteTree extraction out of `WebPageSchema::fromPage()` and into the existing `SchemaControllerExtension`; remove `fromPage()`. The extension chooses the automatic page's existing URL-based `SchemaIDs::webPage($page)` identity, populates URL/title/description/dates, and conditionally links to the global WebSite when `automatic_website_schema` is enabled.
+- Preserve the automatic page's established URL-based `#webpage` ID without forcing that convention on manually constructed WebPage entities. Reuse the agreed shared internal mechanism for established automatic IDs, not a special public builder constructor.
+- **Registry architecture change:** `SchemaRegistry::resolveRelationships()` must not parse WebPage IDs to discover page URLs. Resolve against WebPage canonical URLs and actual registered entity IDs; allow custom WebPage IDs.
+- The base `setMainEntityOfPage($pageURL)` and `setIsPartOfPage($pageURL)` methods must resolve the correct WebPage entity ID for the URL rather than assuming the legacy `$pageURL . '#webpage'` format. Define deterministic behaviour for references before a WebPage is registered and test registration order, custom IDs, multiple pages and explicit main-entity precedence.
+- Maintain builder/integration/registry separation; document examples of both a custom WebPage identity and automatic Silverstripe page generation. Avoid hard-coding assumptions about URL-derived IDs in generic builders.
+
 ## Still to review
 
 - WebPageSchema, BreadcrumbListSchema, GenericSchema, RatingSchema and AggregateRatingSchema: remaining API and integration review.
