@@ -76,7 +76,7 @@ The relationship audit identified behaviour that must be preserved when changing
 - Stable entity `@id`, canonical `url`, and the URL of a page displaying the entity are separate concepts; `setURL()` must not implicitly create a page relationship.
 - Keep the existing registry's main-entity conflict resolution and make duplicate registrations of the same entity ID deterministic, without silently losing valid relationships.
 - Document practical examples for product listings, dedicated product pages, reusable elements, and duplicate registration, and add regression tests before implementation is considered complete.
-- This is an agreed API/design principle; exact duplicate-merge precedence still needs a specific design decision.
+- **Agreed duplicate-merge precedence:** when duplicate registrations of the same entity ID refer to the same page, an explicit `mainEntityOfPage` declaration takes precedence over `isPartOf`, regardless of registration order. Treat this as an edge case, but make it deterministic and cover both registration orders with regression tests. Other merge precedence details remain to be worked out during implementation.
 
 ## Still to review
 
