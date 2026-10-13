@@ -164,6 +164,15 @@ The relationship audit identified behaviour that must be preserved when changing
 - The base `setMainEntityOfPage($pageURL)` and `setIsPartOfPage($pageURL)` methods must resolve the correct WebPage entity ID for the URL rather than assuming the legacy `$pageURL . '#webpage'` format. Define deterministic behaviour for references before a WebPage is registered and test registration order, custom IDs, multiple pages and explicit main-entity precedence.
 - Maintain builder/integration/registry separation; document examples of both a custom WebPage identity and automatic Silverstripe page generation. Avoid hard-coding assumptions about URL-derived IDs in generic builders.
 
+## BreadcrumbListSchema — agreed
+
+- Generic builder: `BreadcrumbListSchema::create(string $identifier)` with a stable site-scoped `#breadcrumblist-{identifier}` entity ID, using the shared identifier generation/validation mechanism.
+- `addItem(string $name, string $url)` appends a nested Schema.org `ListItem` and assigns sequential positions starting at 1. No Silverstripe dependencies or implicit current-page lookup in the builder.
+- Remove `BreadcrumbListSchema::fromPage()`; move `SiteTree::getBreadcrumbItems($maxDepth, $stopAtPageType, $showHidden)` extraction and mapping into the existing `SchemaControllerExtension`. Retain existing behaviour of omitting automatically generated breadcrumbs when fewer than two valid items exist.
+- The automatic integration preserves the established page-specific `SchemaIDs::breadcrumb($page)` (`#breadcrumb`) identity using the shared internal mechanism for established automatic IDs, without forcing this format on manually constructed breadcrumbs.
+- The registry associates breadcrumbs with WebPage entities using actual IDs and page URLs, not by parsing or assuming breadcrumb ID formats. Explicit `WebPageSchema::setBreadcrumb($breadcrumbs->getEntityID())` remains supported and must not be inadvertently overridden by automatic resolution.
+- Document and test custom identifiers, ordering and positions, fewer-than-two-item automatic omission, explicit WebPage association and automatic SiteTree mapping.
+
 ## Still to review
 
 - WebPageSchema, BreadcrumbListSchema, GenericSchema, RatingSchema and AggregateRatingSchema: remaining API and integration review.
