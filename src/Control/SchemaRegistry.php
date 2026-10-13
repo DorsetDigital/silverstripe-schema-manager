@@ -32,23 +32,22 @@ class SchemaRegistry
             return;
         }
 
-        // A main-entity declaration takes precedence over isPartOf for the
-        // same WebPage, irrespective of duplicate registration order.
         $previous = self::$entities[$id] ?? [];
         $incoming = $schema->toArray();
-        foreach (['mainEntityOfPage', 'isPartOf'] as $key) {
-            $other = $key === 'mainEntityOfPage' ? 'isPartOf' : 'mainEntityOfPage';
-            $existingRef = $previous[$key]['@id'] ?? null;
-            $incomingRef = $incoming[$other]['@id'] ?? null;
-            if ($existingRef !== null && $existingRef === $incomingRef) {
-                if ($key === 'mainEntityOfPage') {
-                    unset($incoming['isPartOf']);
-                    $incoming['mainEntityOfPage'] = $previous['mainEntityOfPage'];
-                } else {
-                    unset($previous['isPartOf']);
-                    unset(self::$entities[$id]['isPartOf']);
-                }
-            }
+
+        // Preserve mainEntityOfPage over isPartOf when duplicate registrations
+        // disagree about the same page, regardless of registration order.
+        $oldMain = $previous['mainEntityOfPage']['@id'] ?? null;
+        $newMain = $incoming['mainEntityOfPage']['@id'] ?? null;
+        $oldPart = $previous['isPartOf']['@id'] ?? null;
+        $newPart = $incoming['isPartOf']['@id'] ?? null;
+
+        if ($oldMain !== null && $oldMain === $newPart) {
+            unset($incoming['isPartOf']);
+            $incoming['mainEntityOfPage'] = $previous['mainEntityOfPage'];
+        }
+        if ($newMain !== null && $newMain === $oldPart) {
+            unset(self::$entities[$id]['isPartOf']);
         }
 
         self::$schemas[$id] = $schema;
