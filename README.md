@@ -84,10 +84,10 @@ The following quick reference covers the main builder entry points. Each builder
 
 | Builder | Creation and example methods |
 | --- | --- |
-| `EventSchema` | `create($url, $name, $startDate, $description)`, `setEndDate()`, `setLocation()`, `setOrganizer()`, `setOffer()` |
+| `EventSchema` | `create($identifier, $name, $startDate, $description)`, `setEndDate()`, `setLocation()`, `setOrganizer()`, `setOffer()` |
 | `PersonSchema` | `create($id, $name)`, `setJobTitle()`, `setWorksFor()`, `setSameAs()`, `setCredentials()` |
-| `LocalBusinessSchema` | `create($id, $name, $url)`, `setAddress()`, `setGeo()`, `setOpeningHours()`, `setPriceRange()` |
-| `ReviewSchema` | `create($id, $body, $author)`, `setItemReviewed()`, `setRating()`, `setDatePublished()` |
+| `LocalBusinessSchema` | `create($identifier, $name)`, `setAddress()`, `setGeo()`, `setOpeningHours()`, `setPriceRange()` |
+| `ReviewSchema` | `create($identifier, $body, $author, $itemReviewedID)`, `setItemReviewed()`, `setRating()`, `setDatePublished()` |
 | `RatingSchema` | `create($value, $best, $worst)` |
 | `AggregateRatingSchema` | `create($value, $ratingCount, $reviewCount)`, `setScale()` |
 | `QuotationSchema` | `create($id, $text)`, `setAuthor()`, `setAuthorReference()`, `setCitation()` |
@@ -101,11 +101,11 @@ use DorsetDigital\SchemaManager\Model\Schema\ReviewSchema;
 
 SchemaRegistry::add(
     ReviewSchema::create(
-        'https://example.com/reviews/#review-123',
+        'review-123',
         'Helpful and professional service.',
-        'Example customer'
+        'Example customer',
+        'https://example.com/#service-example'
     )
-        ->setItemReviewed('https://example.com/services/#service')
         ->setRating(RatingSchema::create(5, 5, 1))
 );
 ```
@@ -123,7 +123,8 @@ use DorsetDigital\SchemaManager\Model\Schema\ProductSchema;
 $url = $product->AbsoluteLink();
 
 SchemaRegistry::add(
-    ProductSchema::create($url, $product->Title, $product->MetaDescription)
+    ProductSchema::create('product-' . $product->ID, $product->Title, $product->MetaDescription)
+        ->setURL($url)
         ->setImage($product->Image?->getAbsoluteURL())
         ->setSKU($product->SKU)
         ->setBrand($product->Brand)
@@ -132,7 +133,7 @@ SchemaRegistry::add(
 );
 ```
 
-Builders normally reference a page's `WebPage` with `isPartOf`. Use `setMainEntityOfPage($url)` where the entity is the primary subject of a dedicated page. Multiple `FAQPageSchema` objects for the same URL combine questions into one `FAQPage` entity.
+Generic builders do not create automatic WebPage relationships. Use `setIsPartOfPage($url)` for supporting content. Use `setMainEntityOfPage($url)` where the entity is the primary subject of a dedicated page. Use `FAQPageHelper::addQuestion($question, $answer, $pageURL)` to combine multiple FAQ sections into one page-scoped entity.
 
 ## Referencing global schema entities
 
