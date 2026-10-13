@@ -4,6 +4,7 @@ namespace DorsetDigital\SchemaManager\Tests\Control;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
+use DorsetDigital\SchemaManager\Model\Schema\FAQPageSchema;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 
@@ -64,6 +65,28 @@ class SchemaRegistryTest extends SapphireTest
         $this->assertCount(1, $graph);
         $this->assertSame('Example Ltd', $graph[0]['name']);
         $this->assertSame('https://example.com/', $graph[0]['url']);
+    }
+
+    public function testMultipleFaqSectionsAreCombinedIntoOneEntity(): void
+    {
+        $url = 'https://example.com/faqs/';
+
+        SchemaRegistry::add(FAQPageSchema::create($url)
+            ->addQuestion('First question?', 'First answer.')
+            ->addQuestion('Second question?', 'Second answer.'));
+        SchemaRegistry::add(FAQPageSchema::create($url)
+            ->addQuestion('Third question?', 'Third answer.'));
+
+        $graph = SchemaRegistry::getGraph();
+
+        $this->assertCount(1, $graph);
+        $this->assertSame($url . '#faq', $graph[0]['@id']);
+        $this->assertSame(
+            ['First question?', 'Second question?', 'Third question?'],
+            array_column($graph[0]['mainEntity'], 'name')
+        );
+        // Repeated serialization must not duplicate the aggregated questions.
+        $this->assertSame($graph, SchemaRegistry::getGraph());
     }
 
     public function testDeprecatedFaqHelperStillRegistersFaqPage(): void
