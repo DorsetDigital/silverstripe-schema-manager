@@ -70,11 +70,18 @@ class SchemaResponseMiddlewareTest extends SapphireTest
     public function testNonHtmlResponsesAreUntouched(): void
     {
         $this->registerSchema();
-        foreach (['application/xml', 'text/xml', 'application/rss+xml', 'application/atom+xml', 'application/json', null] as $type) {
+        foreach (['application/xml', 'text/xml', 'application/rss+xml', 'application/atom+xml', 'application/json'] as $type) {
             $body = '<?xml version="1.0"?><root><head></head></root>';
             $response = $this->render($body, $type);
             $this->assertSame($body, $response->getBody(), (string) $type);
         }
+    }
+
+    public function testXmlWithHtmlContentTypeIsNotModified(): void
+    {
+        $this->registerSchema();
+        $body = '<?xml version="1.0"?><root><head></head></root>';
+        $this->assertSame($body, $this->render($body, 'text/html')->getBody());
     }
 
     public function testNonSuccessResponsesAreUntouched(): void
