@@ -129,6 +129,16 @@ The relationship audit identified behaviour that must be preserved when changing
 - Keep `setThumbnail(?string $url)`, but make passing `null` remove an existing `thumbnailUrl` property, consistent with other nullable setters.
 - Documentation should show a practical gallery in a reusable element, with a stable element-derived ID and explicit page relationship.
 
+## FAQPageSchema and FAQPageHelper — agreed
+
+- Standardise the builder as `FAQPageSchema::create(string $identifier)`, generating a stable site-scoped `#faqpage-{identifier}` entity ID. Retain fluent `addQuestion(string $question, string $answer)` with nested `Question` and `acceptedAnswer` data.
+- The generic builder does not derive IDs from page URLs or automatically assign `isPartOf` or `mainEntityOfPage`. Developers can explicitly call `setIsPartOfPage($pageURL)` or `setMainEntityOfPage($pageURL)`.
+- Introduce a **small `FAQPageHelper`** (not `FAQHelper` or `FAQPageSchemaHelper`) with `FAQPageHelper::addQuestion(string $question, string $answer)` as a convenient replacement for the legacy `SchemaRegistry::addFAQ()` entry point.
+- The helper resolves the current page, uses a consistent page-scoped FAQPage identity, collects questions from multiple independently rendered FAQ elements, and registers a single FAQPage entity. It should not claim to be the page's main entity by default; it may set `isPartOf` explicitly.
+- Keep helper behaviour minimal. Direct use of `FAQPageSchema` and `SchemaRegistry::add()` remains the standard path for developers who want control; no unnecessary extra abstraction.
+- Move FAQ-specific question aggregation out of `SchemaRegistry` into the helper, preserving the legacy outcome of one FAQPage with all questions on a page. Ensure the helper works regardless of element order and doesn't lose questions when other entities are registered. Remove the old `SchemaRegistry::addFAQ()` in this breaking revision rather than retaining an additional deprecated alias.
+- Test direct builder usage, multiple FAQ elements on one page, page-scoped isolation, and coexistence with a different page main entity. Document both short examples and the intentional legacy replacement.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
