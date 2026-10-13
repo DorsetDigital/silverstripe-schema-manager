@@ -73,6 +73,42 @@ Page-level typed builders link to their `WebPage` with `isPartOf` by default. Wh
 
 All typed builders inherit `Schema::update()`, allowing projects to add less common Schema.org properties without the module needing to model every possible field.
 
+## Using the schema builders
+
+The module provides typed PHP builders for structured content. Create a builder from the relevant page URL and content, customise it using its fluent methods, then register it with `SchemaRegistry::add()`. Builders are intended to work with your project's existing data models; they do not create CMS fields or data records for products, jobs, galleries or FAQs.
+
+| Builder | Purpose | Common methods |
+| --- | --- | --- |
+| `FAQPageSchema` | Questions and accepted answers | `create($url)`, `addQuestion($question, $answer)` |
+| `ImageGallerySchema` | Image collections and image metadata | `create($url, $name)`, `addImage(...)`, `setThumbnail($url)` |
+| `ProductSchema` | Products and their offers | `create($url, $name, $description)`, `setImage()`, `setSKU()`, `setBrand()`, `setOffer()` |
+| `ServiceSchema` | Services and providers | `create($url, $name, $description)`, `setAreaServed()`, `setProvider()`, `setOffer()` |
+| `JobPostingSchema` | Vacancies and employment details | `create($url, $title, $description)`, `setDatePosted()`, `setValidThrough()`, `setJobLocation()`, `setRemote()`, `setBaseSalaryRange()` |
+| `BlogPostingSchema` | Silverstripe Blog posts (opt-in) | `fromBlogPost($post)` |
+| `OrganisationSchema`, `WebsiteSchema`, `WebPageSchema`, `BreadcrumbListSchema` | Core site/page entities, normally generated automatically | See the site and breadcrumb guides |
+
+For example, a dedicated product page can register its product as the main subject:
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\ProductSchema;
+
+$url = $product->AbsoluteLink();
+
+SchemaRegistry::add(
+    ProductSchema::create($url, $product->Title, $product->MetaDescription)
+        ->setImage($product->Image?->getAbsoluteURL())
+        ->setSKU($product->SKU)
+        ->setBrand($product->Brand)
+        ->setOffer($product->Price, 'GBP', $product->InStock)
+        ->setMainEntityOfPage($url)
+);
+```
+
+A builder normally links to the page's `WebPage` using `isPartOf`. Call `setMainEntityOfPage($url)` when the entity is the primary subject of a dedicated page. All builders inherit `update(array $data)` for additional Schema.org properties.
+
+Multiple `FAQPageSchema` objects registered for the same page URL are combined into a single FAQ entity, allowing independent components to contribute questions. See the individual guides above for full examples and builder-specific options.
+
 ## Optional Silverstripe Blog integration
 
 The `BlogPosting` integration is **not enabled automatically**. If your project uses `silverstripe/blog`, add the bundled extension to blog posts in your project's YAML configuration:
