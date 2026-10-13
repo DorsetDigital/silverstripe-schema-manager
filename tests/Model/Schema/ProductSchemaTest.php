@@ -10,10 +10,11 @@ class ProductSchemaTest extends SapphireTest
     public function testProductSchemaBuildsCommonProductData(): void
     {
         $schema = ProductSchema::create(
-            'https://example.com/products/example/',
+            'example',
             'Example product',
             'An example product.'
         )
+            ->setURL('https://example.com/products/example/')
             ->setImage('https://example.com/images/product.jpg')
             ->setSKU('SKU-123')
             ->setBrand('Example Brand')
@@ -22,8 +23,8 @@ class ProductSchemaTest extends SapphireTest
         $data = $schema->toArray();
 
         $this->assertSame('Product', $data['@type']);
-        $this->assertSame('https://example.com/products/example/#product', $data['@id']);
-        $this->assertSame('https://example.com/products/example/#webpage', $data['isPartOf']['@id']);
+        $this->assertStringEndsWith('#product-example', $data['@id']);
+        $this->assertArrayNotHasKey('isPartOf', $data);
         $this->assertSame('Example product', $data['name']);
         $this->assertSame('An example product.', $data['description']);
         $this->assertSame('https://example.com/images/product.jpg', $data['image']);
