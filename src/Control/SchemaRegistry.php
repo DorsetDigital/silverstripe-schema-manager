@@ -32,8 +32,28 @@ class SchemaRegistry
             return;
         }
 
+        // A main-entity declaration takes precedence over isPartOf for the
+        // same WebPage, irrespective of duplicate registration order.
+        $previous = self::$entities[$id] ?? [];
+        $incoming = $schema->toArray();
+        foreach (['mainEntityOfPage', 'isPartOf'] as $key) {
+            $other = $key === 'mainEntityOfPage' ? 'isPartOf' : 'mainEntityOfPage';
+            $existingRef = $previous[$key]['@id'] ?? null;
+            $incomingRef = $incoming[$other]['@id'] ?? null;
+            if ($existingRef !== null && $existingRef === $incomingRef) {
+                if ($key === 'mainEntityOfPage') {
+                    unset($incoming['isPartOf']);
+                    $incoming['mainEntityOfPage'] = $previous['mainEntityOfPage'];
+                } else {
+                    unset($previous['isPartOf']);
+                    unset(self::$entities[$id]['isPartOf']);
+                }
+            }
+        }
+
         self::$schemas[$id] = $schema;
-        self::addEntity($id, $schema->toArray());
+        self::addEntity($id, $incoming);
+        $schema->update(self::$entities[$id]);
     }
 
     public static function addEntity(string $id, array $data): void
