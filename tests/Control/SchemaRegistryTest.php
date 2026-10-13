@@ -3,6 +3,7 @@
 namespace DorsetDigital\SchemaManager\Tests\Control;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Control\FAQPageHelper;
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
 use DorsetDigital\SchemaManager\Model\Schema\FAQPageSchema;
 use SilverStripe\CMS\Model\SiteTree;
@@ -71,11 +72,9 @@ class SchemaRegistryTest extends SapphireTest
     {
         $url = 'https://example.com/faqs/';
 
-        SchemaRegistry::add(FAQPageSchema::create($url)
-            ->addQuestion('First question?', 'First answer.')
-            ->addQuestion('Second question?', 'Second answer.'));
-        SchemaRegistry::add(FAQPageSchema::create($url)
-            ->addQuestion('Third question?', 'Third answer.'));
+        FAQPageHelper::addQuestion('First question?', 'First answer.', $url);
+        FAQPageHelper::addQuestion('Second question?', 'Second answer.', $url);
+        FAQPageHelper::addQuestion('Third question?', 'Third answer.', $url);
 
         $graph = SchemaRegistry::getGraph();
 
