@@ -55,6 +55,20 @@ This document records agreed decisions for the upcoming breaking API revision. *
 - **Future compatibility requirement:** The API and generated ID must not assume that a product can only ever have one variant. Preserve stable product identity when variants are introduced; do not encode a particular SKU, price, or variant into the parent product ID by default. Variants can later have their own IDs and relationships to the product without requiring a breaking change to this constructor.
 - Do not implement variants in this release; assess future variant modelling separately.
 
+## Relationship audit — required safeguards before implementation
+
+The relationship audit identified behaviour that must be preserved when changing constructor signatures. **Do not implement removal of relationship capabilities as an incidental side effect of new ID conventions.**
+
+- `Schema::setMainEntityOfPage($pageURL)` and `setIsPartOfPage($pageURL)` explicitly relate entities to a WebPage; they remove a conflicting relation to the same page. Keep both and their conflict-handling logic.
+- `SchemaRegistry::resolveRelationships()` selects the WebPage's main entity and demotes a previous competing main entity to `isPartOf`. Preserve this coexistence behaviour and cover it with tests.
+- `ProductSchema` currently sets `isPartOf` to its constructor URL's WebPage and sets its own `url`. The product guide explicitly uses `setMainEntityOfPage()` for a dedicated product page. A new site-scoped constructor must retain the ability to explicitly set either relationship. Do **not** automatically set `mainEntityOfPage`.
+- `ProductSchema::setOffer()` currently defaults an Offer URL to the Product's `url`. Preserve this when introducing optional `setURL()`, and test call-order behaviour.
+- `ServiceSchema` currently defaults `provider` to the global organisation and `isPartOf` to the constructor URL's WebPage. Retain default provider unless separately agreed otherwise; preserve explicit page-relationship APIs. **Service constructor/automatic page-link changes are not yet agreed.**
+- `JobPostingSchema` similarly defaults `hiringOrganization` and page `isPartOf`. `BlogPostingSchema` links to the WebSite and organisation and explicitly marks its post as page main entity. Review these separately before changing.
+- `WebPageSchema` points to `WebSite`, and the registry resolves breadcrumb and main entity references. `FAQPageSchema` merges questions from multiple sections under one page-scoped ID. Preserve both.
+- A reusable entity's stable `@id` and the WebPage it is displayed on are distinct concepts. Do not silently derive entity identity from the rendering page.
+- The current registry keys entities by `@id` and merges duplicate IDs. It also stores typed schemas by ID, with later registrations replacing earlier typed instances (except FAQ special handling). Test duplicate/reused entities to ensure no unintended relationship loss or cross-page assumptions.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
