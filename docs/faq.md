@@ -1,22 +1,18 @@
 # FAQPage schema
 
-Use `FAQPageSchema` to describe a page containing questions and accepted answers.
+Use a stable identifier when creating a generic FAQ entity. Page relationships are explicit:
 
 ```php
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Control\FAQPageHelper;
 use DorsetDigital\SchemaManager\Model\Schema\FAQPageSchema;
 
-$faqSchema = FAQPageSchema::create($page->AbsoluteLink());
-
-foreach ($page->FAQs() as $faq) {
-    $faqSchema->addQuestion($faq->Question, $faq->Answer);
-}
-
-SchemaRegistry::add($faqSchema);
+$schema = FAQPageSchema::create('faq-section-' . $section->ID)
+    ->setIsPartOfPage($page->AbsoluteLink())
+    ->addQuestion('What is included?', 'Everything listed in the description.');
+SchemaRegistry::add($schema);
 ```
 
-By default the entity is linked to the page's automatic `WebPage` using `isPartOf`. If the FAQ is the primary subject of a dedicated page, call `$faqSchema->setMainEntityOfPage($page->AbsoluteLink())`. Each call to `addQuestion()` adds a Schema.org `Question` containing its `acceptedAnswer`.
+For multiple FAQ sections on the same page, use `FAQPageHelper::addQuestion($question, $answer, $pageURL)` for each question. The helper combines questions into one page-scoped FAQ entity regardless of section order.
 
-`SchemaRegistry::addFAQ()` remains available for backwards compatibility but is deprecated. New integrations should use `FAQPageSchema`.
-
-Multiple FAQ sections can register separate `FAQPageSchema` instances for the same page URL. The registry combines their questions into one `FAQPage` entity, preserving the order in which sections are registered.
+`SchemaRegistry::addFAQ()` remains available as a deprecated forwarding method.
