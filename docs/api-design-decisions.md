@@ -173,6 +173,15 @@ The relationship audit identified behaviour that must be preserved when changing
 - The registry associates breadcrumbs with WebPage entities using actual IDs and page URLs, not by parsing or assuming breadcrumb ID formats. Explicit `WebPageSchema::setBreadcrumb($breadcrumbs->getEntityID())` remains supported and must not be inadvertently overridden by automatic resolution.
 - Document and test custom identifiers, ordering and positions, fewer-than-two-item automatic omission, explicit WebPage association and automatic SiteTree mapping.
 
+## RatingSchema and AggregateRatingSchema — agreed
+
+- Retain `RatingSchema::create(float|int $value, ?float $best = null, ?float $worst = null)` and `AggregateRatingSchema::create(float|int $value, int $ratingCount, ?int $reviewCount = null)`.
+- These are nested, value-oriented schemas: no mandatory identifier, automatic `@id`, registry integration, or Silverstripe dependencies.
+- Add `RatingSchema::setScale(float|int $best, float|int $worst = 1)` to match `AggregateRatingSchema::setScale()`; align accepted numeric scale types in both.
+- Keep scale boundaries optional and do not assume a five-star scale when none is supplied.
+- Validate explicitly supplied scale boundaries and rating values against them, and reject negative rating/review counts. Preserve the distinction between `ratingCount` and `reviewCount`; never infer one from the other.
+- Support straightforward nesting via `toArray()` (including `ReviewSchema::setRating()`). Document examples and test valid/invalid values, optional scales, and nested output.
+
 ## Still to review
 
 - WebPageSchema, BreadcrumbListSchema, GenericSchema, RatingSchema and AggregateRatingSchema: remaining API and integration review.
