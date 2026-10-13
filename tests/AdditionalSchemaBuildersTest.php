@@ -9,17 +9,17 @@ use DorsetDigital\SchemaManager\Model\Schema\PersonSchema;
 use DorsetDigital\SchemaManager\Model\Schema\QuotationSchema;
 use DorsetDigital\SchemaManager\Model\Schema\RatingSchema;
 use DorsetDigital\SchemaManager\Model\Schema\ReviewSchema;
-use PHPUnit\Framework\TestCase;
+use SilverStripe\Dev\SapphireTest;
 
-class AdditionalSchemaBuildersTest extends TestCase
+class AdditionalSchemaBuildersTest extends SapphireTest
 {
     public function testPersonAndBusinessRelationships(): void
     {
-        $business = LocalBusinessSchema::create('https://example.com/#office', 'Office')
+        $business = LocalBusinessSchema::create('office', 'Office')
             ->setParentOrganization('https://example.com/#organisation')
             ->setAddress(['addressLocality' => 'London']);
 
-        $person = PersonSchema::create('https://example.com/#jane', 'Jane')
+        $person = PersonSchema::create('jane', 'Jane')
             ->setWorksFor($business->getEntityID());
 
         $this->assertSame(['@id' => $business->getEntityID()], $person->toArray()['worksFor']);
@@ -28,8 +28,7 @@ class AdditionalSchemaBuildersTest extends TestCase
 
     public function testReviewWithNestedRating(): void
     {
-        $review = ReviewSchema::create('https://example.com/#review-1', 'Great', 'Jane')
-            ->setItemReviewed('https://example.com/#product')
+        $review = ReviewSchema::create('review-1', 'Great', 'Jane', 'https://example.com/#product')
             ->setRating(RatingSchema::create(4, 5, 1));
 
         $this->assertSame('Rating', $review->toArray()['reviewRating']['@type']);
@@ -39,14 +38,14 @@ class AdditionalSchemaBuildersTest extends TestCase
 
     public function testOtherBuilderOutputs(): void
     {
-        $event = EventSchema::create('https://example.com/events/open-day', 'Open Day', '2026-11-01')
+        $event = EventSchema::create('open-day', 'Open Day', '2026-11-01')
             ->setOrganizer('https://example.com/#organisation');
-        $this->assertSame('https://example.com/events/open-day/#event', $event->getEntityID());
+        $this->assertStringEndsWith('#event-open-day', $event->getEntityID());
 
         $aggregate = AggregateRatingSchema::create(4.5, 20, 18);
         $this->assertSame(18, $aggregate->toArray()['reviewCount']);
 
-        $quote = QuotationSchema::create('https://example.com/#quote', 'Hello')->setAuthor('Jane');
+        $quote = QuotationSchema::create('quote', 'Hello')->setAuthor('Jane');
         $this->assertSame('Quotation', $quote->toArray()['@type']);
     }
 }
