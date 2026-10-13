@@ -134,19 +134,46 @@ SchemaRegistry::add(
 
 Builders normally reference a page's `WebPage` with `isPartOf`. Use `setMainEntityOfPage($url)` where the entity is the primary subject of a dedicated page. Multiple `FAQPageSchema` objects for the same URL combine questions into one `FAQPage` entity.
 
-## Linking schema entities
+## Referencing global schema entities
 
-Schema Manager automatically creates structured data for the website, organisation and individual pages. When you add something more specific, such as a Person, Event or Service, you can **link it to those existing entries** instead of repeating the same information.
+Schema Manager automatically creates entities for the site's organisation, website and current page. When building an integration, you often need to **reference one of those existing entities** — for example, to identify the organisation providing a Service or the website containing a page.
 
-For example, an Event can reference the site's organisation as its organiser. Schema Manager gives each entity a consistent identifier (an `@id`) so these relationships work across independently registered schema.
+Rather than reconstructing their `@id` values or hard-coding URL fragments, use `SchemaIDs`:
 
-Most projects won't need to construct these identifiers manually. The schema builders handle common page relationships, and the `SchemaIDs` helper is available when writing custom integrations.
+```php
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 
-For examples of linking entities, reusing identifiers and extending existing data, see [Working with schema entities](docs/schema-entities.md).
+$organisationID = SchemaIDs::organisation();
+$websiteID = SchemaIDs::website();
+$pageID = SchemaIDs::webPage($page);
+$breadcrumbID = SchemaIDs::breadcrumb($page);
+```
+
+`webPage()` and `breadcrumb()` can also be called without `$page` when there is a current Silverstripe page. For a custom page-based entity, use `SchemaIDs::forPageURL($url, 'fragment')`.
+
+For example, a custom Service integration can reference the **existing organisation entity** as its provider:
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+
+SchemaRegistry::addEntity(
+    SchemaIDs::forPageURL($page->AbsoluteLink(), 'service'),
+    [
+        '@type' => 'Service',
+        'name' => $page->Title,
+        'provider' => SchemaIDs::ref(SchemaIDs::organisation()),
+    ]
+);
+```
+
+`SchemaIDs::ref($id)` simply returns `['@id' => $id]`, the format used to link to another schema entity. **These helpers only generate identifiers and references**; they don't register new entities or change the existing ones.
+
+See [Working with schema entities](docs/schema-entities.md) for more on registering custom entities and linking them together.
 
 ### Entity fields in CMS page annotations
 
-The CMS can also link schema entities without custom PHP. For example, an Event annotation can specify an organiser (Organisation or Person) and a location, while a Service annotation can specify its provider. Each field can refer to an existing entity or describe one directly, depending on the project configuration.
+The CMS can also link schema entities without custom PHP. For example, an Event annotation can specify an organiser (Organization or Person) and a location, while a Service annotation can specify its provider. Each field can refer to an existing entity or describe one directly, depending on the project configuration.
 
 See [Page annotations](docs/page-annotations.md) for the available options and how to configure them.
 
