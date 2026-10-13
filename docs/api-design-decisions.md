@@ -107,6 +107,16 @@ The relationship audit identified behaviour that must be preserved when changing
 - Preserve existing date, employment type, location, remote-work and salary methods.
 - Documentation must be **simple and explicit**, with practical examples of a vacancy on its dedicated page, in a general jobs listing, and in reusable homepage/promotional content. Clearly distinguish stable entity ID, canonical URL, and relationship to the current page. Apply the same clarity to Product and other reusable builders; avoid describing the removed automatic `isPartOf` assignment as 'preserved'.
 
+## BlogPostingSchema and existing Blog extension — agreed
+
+- Standardise the generic builder as `BlogPostingSchema::create(string $identifier, string $headline, ?string $description = null)`, with a stable site-scoped `#blogposting-{identifier}` entity ID.
+- The generic builder is independent of `silverstripe/blog` and exposes fluent setters for canonical URL, publication/modified dates, image, author and publisher. Page relationships remain explicit.
+- Remove the current `BlogPostingSchema::fromBlogPost(DataObject $post)` factory in this intentional breaking revision; keep Silverstripe-specific extraction out of the builder.
+- **Reuse the existing `BlogPostSchemaExtension`**, which is explicitly applied to the Silverstripe BlogPost class by the consuming project. Do not add another integration/registration mechanism or automatically apply the extension.
+- Update its existing `updateSchemaManagerEntities(array &$entities)` hook to map BlogPost data into the generic builder and append the resulting entity. Use a stable BlogPost record ID; set headline, description, canonical URL, dates and featured image where available, and explicitly establish the dedicated BlogPost page's main-entity relationship.
+- The current BlogPost integration's publisher reference to the global organisation should be applied conditionally when automatic organisation schema is enabled, avoiding dangling default references. The generic builder does not assume a publisher.
+- Keep documentation short and practical: demonstrate the generic builder separately from the opt-in BlogPost extension, and explain that applying the extension enables the integration across BlogPost pages. Test the mapping and relationships.
+
 ## Still to review
 
 - QuotationSchema and remaining builders: constructor arguments, ID scoping, required fields and relationships.
