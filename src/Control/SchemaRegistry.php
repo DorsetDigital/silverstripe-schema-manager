@@ -24,6 +24,14 @@ class SchemaRegistry
             return;
         }
 
+        // Multiple FAQ sections on the same page share an ID. Keep the first
+        // typed instance, but append questions from every subsequent section.
+        if ($schema instanceof FAQPageSchema && isset(self::$schemas[$id])
+            && self::$schemas[$id] instanceof FAQPageSchema) {
+            self::addEntity($id, $schema->toArray());
+            return;
+        }
+
         self::$schemas[$id] = $schema;
         self::addEntity($id, $schema->toArray());
     }
@@ -31,6 +39,17 @@ class SchemaRegistry
     public static function addEntity(string $id, array $data): void
     {
         if (isset(self::$entities[$id])) {
+            // FAQ mainEntity is a list, not a map: concatenate questions rather
+            // than recursively replacing entries with matching numeric indexes.
+            if ((self::$entities[$id]['@type'] ?? null) === 'FAQPage'
+                && ($data['@type'] ?? null) === 'FAQPage'
+                && isset($data['mainEntity']) && is_array($data['mainEntity'])) {
+                $data['mainEntity'] = array_merge(
+                    self::$entities[$id]['mainEntity'] ?? [],
+                    $data['mainEntity']
+                );
+            }
+
             self::$entities[$id] = array_replace_recursive(
                 self::$entities[$id],
                 $data
