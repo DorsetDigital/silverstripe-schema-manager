@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feature/cms5-compatibility
   pull_request:
 
 jobs:
@@ -31,10 +32,17 @@ jobs:
       SS_DATABASE_USERNAME: root
       SS_DATABASE_PASSWORD: root
     strategy:
+      fail-fast: false
       matrix:
-        php-version:
-          - '8.3'
-          - '8.4'
+        include:
+          - php-version: '8.1'
+            cms-version: '^5'
+          - php-version: '8.3'
+            cms-version: '^5'
+          - php-version: '8.3'
+            cms-version: '^6'
+          - php-version: '8.4'
+            cms-version: '^6'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -55,8 +63,14 @@ jobs:
       - name: Validate Composer configuration
         run: composer validate --strict
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Install dependencies for selected CMS version
+        env:
+          CMS_VERSION: ${{ matrix.cms-version }}
+        run: |
+          composer require --no-update --no-interaction \
+            "silverstripe/framework:$CMS_VERSION" \
+            "silverstripe/cms:$CMS_VERSION"
+          composer update --prefer-dist --no-interaction --no-progress -W
 
       - name: Create minimal Silverstripe test application
         run: |
