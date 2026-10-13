@@ -13,7 +13,7 @@ class ImageGallerySchemaTest extends SapphireTest
 
         $this->assertSame(
             'https://example.com/gallery/#imagegallery',
-            $schema->getID()
+            $schema->getEntityID()
         );
     }
 
@@ -22,8 +22,8 @@ class ImageGallerySchemaTest extends SapphireTest
         $first = ImageGallerySchema::create('https://example.com/gallery/', null, null, '42');
         $second = ImageGallerySchema::create('https://example.com/gallery/', null, null, '73');
 
-        $this->assertSame('https://example.com/gallery/#imagegallery-42', $first->getID());
-        $this->assertSame('https://example.com/gallery/#imagegallery-73', $second->getID());
-        $this->assertNotSame($first->getID(), $second->getID());
+        $this->assertSame('https://example.com/gallery/#imagegallery-42', $first->getEntityID());
+        $this->assertSame('https://example.com/gallery/#imagegallery-73', $second->getEntityID());
+        $this->assertNotSame($first->getEntityID(), $second->getEntityID());
     }
 }
