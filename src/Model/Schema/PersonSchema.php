@@ -2,11 +2,13 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
+
 class PersonSchema extends Schema
 {
-    public static function create(string $id, string $name): static
+    public static function create(string $identifier, string $name): static
     {
-        return new static(['@type' => 'Person', '@id' => $id, 'name' => $name]);
+        return new static(['@type' => 'Person', '@id' => SchemaIDs::forEntity('person', $identifier), 'name' => $name]);
     }
 
     public function setJobTitle(?string $title): static { if ($title) $this->data['jobTitle'] = $title; return $this; }
