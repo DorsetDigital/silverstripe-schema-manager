@@ -20,9 +20,9 @@ class AdditionalSchemaBuildersTest extends TestCase
             ->setAddress(['addressLocality' => 'London']);
 
         $person = PersonSchema::create('https://example.com/#jane', 'Jane')
-            ->setWorksFor($business->getID());
+            ->setWorksFor($business->getEntityID());
 
-        $this->assertSame(['@id' => $business->getID()], $person->toArray()['worksFor']);
+        $this->assertSame(['@id' => $business->getEntityID()], $person->toArray()['worksFor']);
         $this->assertSame('PostalAddress', $business->toArray()['address']['@type']);
     }
 
@@ -34,14 +34,14 @@ class AdditionalSchemaBuildersTest extends TestCase
 
         $this->assertSame('Rating', $review->toArray()['reviewRating']['@type']);
         $this->assertSame(['@id' => 'https://example.com/#product'], $review->toArray()['itemReviewed']);
-        $this->assertSame('', RatingSchema::create(5)->getID());
+        $this->assertSame('', RatingSchema::create(5)->getEntityID());
     }
 
     public function testOtherBuilderOutputs(): void
     {
         $event = EventSchema::create('https://example.com/events/open-day', 'Open Day', '2026-11-01')
             ->setOrganizer('https://example.com/#organisation');
-        $this->assertSame('https://example.com/events/open-day/#event', $event->getID());
+        $this->assertSame('https://example.com/events/open-day/#event', $event->getEntityID());
 
         $aggregate = AggregateRatingSchema::create(4.5, 20, 18);
         $this->assertSame(18, $aggregate->toArray()['reviewCount']);
