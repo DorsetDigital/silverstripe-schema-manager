@@ -11,7 +11,7 @@ $pageURL = $page->AbsoluteLink();
 
 SchemaRegistry::add(
     QuotationSchema::create(
-        SchemaIDs::forPageURL($pageURL, 'quotation-1'),
+        'customer-quotation-1',
         'A quotation from a customer.'
     )
         ->setAuthor('Example Customer')
@@ -22,4 +22,4 @@ SchemaRegistry::add(
 
 `setAuthor($name)` creates an inline Person. To reuse a separately registered Person entity, use `setAuthorReference($personID)`. `setCitation($citation)` adds the attribution/source and `setIsPartOf($id)` links the quotation to another entity.
 
-For feedback that explicitly reviews a product or service, consider [ReviewSchema](review.md) instead. Unlike the page-oriented builders, `QuotationSchema` takes a caller-supplied ID, so ensure it is stable and unique.
+For feedback that explicitly reviews a product or service, consider [ReviewSchema](review.md) instead. `QuotationSchema` takes a stable site-scoped identifier, so ensure it is stable and unique.
