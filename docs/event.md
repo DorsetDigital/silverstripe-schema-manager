@@ -10,7 +10,8 @@ use DorsetDigital\SchemaManager\Model\Schema\EventSchema;
 $url = $event->AbsoluteLink();
 
 SchemaRegistry::add(
-    EventSchema::create($url, $event->Title, '2026-11-20T19:00:00+00:00', $event->MetaDescription)
+    EventSchema::create('event-' . $event->ID, $event->Title, '2026-11-20T19:00:00+00:00', $event->MetaDescription)
+        ->setURL($url)
         ->setEndDate('2026-11-20T22:00:00+00:00')
         ->setLocation('Example Hall', '1 Example Street, London')
         ->setOrganizer(SchemaIDs::organisation())
