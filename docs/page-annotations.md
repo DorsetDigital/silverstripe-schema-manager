@@ -83,3 +83,7 @@ class CustomEventHandler implements SchemaAnnotationHandler
 Handlers are resolved through Silverstripe Injector. If no handler is configured, the default `GenericAnnotationHandler` creates a `GenericSchema`.
 
 For complex content with an existing data model, prefer constructing builders directly and registering them with `SchemaRegistry::add()`.
+
+## Page relationship
+
+A successfully generated page-level annotation is automatically linked to its containing `WebPage` using `mainEntityOfPage`. An explicit `mainEntityOfPage` supplied by a custom annotation handler is preserved. This behaviour applies to page annotations, not to schema entities registered by reusable elements.
