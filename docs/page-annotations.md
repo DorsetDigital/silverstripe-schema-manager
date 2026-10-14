@@ -87,3 +87,5 @@ For complex content with an existing data model, prefer constructing builders di
 ## Page relationship
 
 A successfully generated page-level annotation is automatically linked to its containing `WebPage` using `mainEntityOfPage`. An explicit `mainEntityOfPage` supplied by a custom annotation handler is preserved. This behaviour applies to page annotations, not to schema entities registered by reusable elements.
+
+If `automatic_webpage_schema` is disabled, the annotation still references the page's conventional `#webpage` identifier, but Schema Manager does not automatically emit a matching `WebPage` entity. Applications disabling automatic WebPage generation should register their own WebPage entity with that ID if they want the relationship to resolve within the same graph.
