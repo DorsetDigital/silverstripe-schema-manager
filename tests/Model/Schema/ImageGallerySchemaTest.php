@@ -7,23 +7,20 @@ use SilverStripe\Dev\SapphireTest;
 
 class ImageGallerySchemaTest extends SapphireTest
 {
-    public function testDefaultIDIsPreserved(): void
+    public function testStableSiteScopedID(): void
     {
-        $schema = ImageGallerySchema::create('https://example.com/gallery/');
+        $schema = ImageGallerySchema::create('gallery');
 
-        $this->assertSame(
-            'https://example.com/gallery/#imagegallery',
-            $schema->getID()
-        );
+        $this->assertStringEndsWith('#imagegallery-gallery', $schema->getEntityID());
     }
 
     public function testIdentifierCreatesUniqueGalleryID(): void
     {
-        $first = ImageGallerySchema::create('https://example.com/gallery/', null, null, '42');
-        $second = ImageGallerySchema::create('https://example.com/gallery/', null, null, '73');
+        $first = ImageGallerySchema::create('gallery-42');
+        $second = ImageGallerySchema::create('gallery-73');
 
-        $this->assertSame('https://example.com/gallery/#imagegallery-42', $first->getID());
-        $this->assertSame('https://example.com/gallery/#imagegallery-73', $second->getID());
-        $this->assertNotSame($first->getID(), $second->getID());
+        $this->assertStringEndsWith('#imagegallery-gallery-42', $first->getEntityID());
+        $this->assertStringEndsWith('#imagegallery-gallery-73', $second->getEntityID());
+        $this->assertNotSame($first->getEntityID(), $second->getEntityID());
     }
 }

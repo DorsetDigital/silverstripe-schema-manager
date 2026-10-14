@@ -18,19 +18,56 @@ class SchemaRegistry
 
     public static function add(Schema $schema): void
     {
-        $id = $schema->getID();
+        $id = $schema->getEntityID();
 
         if (!$id) {
             return;
         }
 
+        // Multiple FAQ sections on the same page share an ID. Keep the first
+        // typed instance, but append questions from every subsequent section.
+        if ($schema instanceof FAQPageSchema && isset(self::$schemas[$id])
+            && self::$schemas[$id] instanceof FAQPageSchema) {
+            self::addEntity($id, $schema->toArray());
+            return;
+        }
+
+        $previous = self::$entities[$id] ?? [];
+        $incoming = $schema->toArray();
+
+        // Preserve mainEntityOfPage over isPartOf when duplicate registrations
+        // disagree about the same page, regardless of registration order.
+        $oldMain = $previous['mainEntityOfPage']['@id'] ?? null;
+        $newMain = $incoming['mainEntityOfPage']['@id'] ?? null;
+        $oldPart = $previous['isPartOf']['@id'] ?? null;
+        $newPart = $incoming['isPartOf']['@id'] ?? null;
+
+        if ($oldMain !== null && $oldMain === $newPart) {
+            unset($incoming['isPartOf']);
+            $incoming['mainEntityOfPage'] = $previous['mainEntityOfPage'];
+        }
+        if ($newMain !== null && $newMain === $oldPart) {
+            unset(self::$entities[$id]['isPartOf']);
+        }
+
         self::$schemas[$id] = $schema;
-        self::addEntity($id, $schema->toArray());
+        self::addEntity($id, $incoming);
     }
 
     public static function addEntity(string $id, array $data): void
     {
         if (isset(self::$entities[$id])) {
+            // FAQ mainEntity is a list, not a map: concatenate questions rather
+            // than recursively replacing entries with matching numeric indexes.
+            if ((self::$entities[$id]['@type'] ?? null) === 'FAQPage'
+                && ($data['@type'] ?? null) === 'FAQPage'
+                && isset($data['mainEntity']) && is_array($data['mainEntity'])) {
+                $data['mainEntity'] = array_merge(
+                    self::$entities[$id]['mainEntity'] ?? [],
+                    $data['mainEntity']
+                );
+            }
+
             self::$entities[$id] = array_replace_recursive(
                 self::$entities[$id],
                 $data
@@ -51,18 +88,7 @@ class SchemaRegistry
             E_USER_DEPRECATED
         );
 
-        if (!$pageURL) {
-            $page = Director::get_current_page();
-
-            if ($page && method_exists($page, 'AbsoluteLink')) {
-                $pageURL = $page->AbsoluteLink();
-            } else {
-                $pageURL = Director::absoluteURL(Controller::curr()->getRequest()->getURL());
-            }
-        }
-
-        $schema = FAQPageSchema::create($pageURL)->addQuestion($question, $answer);
-        self::add($schema);
+        FAQPageHelper::addQuestion($question, $answer, $pageURL);
     }
 
     public static function addBreadCrumbs(
@@ -115,49 +141,72 @@ class SchemaRegistry
 
     private static function resolveRelationships(): void
     {
-        $webPages = [];
-
-        foreach (self::$schemas as $schema) {
-            if ($schema instanceof WebPageSchema) {
-                $webPages[$schema->getID()] = $schema;
+        foreach (self::$schemas as $webPage) {
+            if (!$webPage instanceof WebPageSchema) {
+                continue;
             }
-        }
 
-        foreach ($webPages as $webPageID => $webPage) {
-            $pageURL = substr($webPageID, 0, -strlen('#webpage'));
-            $mainEntity = null;
-            $breadcrumb = null;
+            $webPageID = $webPage->getEntityID();
+            $pageURL = $webPage->toArray()['url'] ?? null;
+            if (!is_string($pageURL) || $pageURL === '') {
+                continue;
+            }
+
+            $pageURL = rtrim($pageURL, '/') . '/';
+            $defaultID = SchemaIDs::forPageURL($pageURL, 'webpage');
+            $mainEntities = [];
 
             foreach (self::$schemas as $schema) {
                 if ($schema === $webPage) {
                     continue;
                 }
 
-                if ($schema instanceof BreadcrumbListSchema
-                    && $schema->getID() === $pageURL . '#breadcrumb'
-                ) {
-                    $breadcrumb = $schema;
-                    continue;
+                $data = self::$entities[$schema->getEntityID()] ?? $schema->toArray();
+                $mainRef = $data['mainEntityOfPage']['@id'] ?? null;
+                $partRef = $data['isPartOf']['@id'] ?? null;
+
+                if ($mainRef === $defaultID || $mainRef === $webPageID) {
+                    $mainEntities[] = $schema;
                 }
 
-                if ($schema->isMainEntityOfPage($pageURL)) {
-                    if ($mainEntity instanceof Schema) {
-                        $mainEntity->setIsPartOfPage($pageURL);
-                    }
+                // Reconcile conventional references with a registered page's
+                // custom ID. Only relationships for this page are rewritten.
+                if ($webPageID !== $defaultID && $partRef === $defaultID) {
+                    $data['isPartOf'] = ['@id' => $webPageID];
+                    self::$entities[$schema->getEntityID()] = array_replace_recursive(
+                        self::$entities[$schema->getEntityID()] ?? [],
+                        $data
+                    );
+                }
 
-                    $mainEntity = $schema;
+                if ($schema instanceof BreadcrumbListSchema
+                    && $schema->getEntityID() === SchemaIDs::forPageURL($pageURL, 'breadcrumb')
+                    && !isset($webPage->toArray()['breadcrumb'])) {
+                    $webPage->setBreadcrumb($schema->getEntityID());
                 }
             }
 
-            $webPage->setMainEntity($mainEntity);
-            $webPage->setBreadcrumb($breadcrumb);
-        }
+            if ($mainEntities) {
+                // Last registered main entity wins; previous contenders become
+                // supporting entities. Resolve directly to the actual page ID
+                // so repeated graph generation produces the same result.
+                $winner = array_pop($mainEntities);
+                foreach ($mainEntities as $demoted) {
+                    $id = $demoted->getEntityID();
+                    $data = self::$entities[$id] ?? $demoted->toArray();
+                    unset($data['mainEntityOfPage']);
+                    $data['isPartOf'] = ['@id' => $webPageID];
+                    self::$entities[$id] = $data;
+                }
 
-        foreach (self::$schemas as $id => $schema) {
-            self::$entities[$id] = array_replace_recursive(
-                $schema->toArray(),
-                self::$entities[$id] ?? []
-            );
+                $winnerID = $winner->getEntityID();
+                $data = self::$entities[$winnerID] ?? $winner->toArray();
+                unset($data['isPartOf']);
+                $data['mainEntityOfPage'] = ['@id' => $webPageID];
+                self::$entities[$winnerID] = $data;
+                self::$entities[$webPageID]['mainEntity'] = ['@id' => $winnerID];
+            }
+
         }
     }
 

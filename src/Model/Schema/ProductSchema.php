@@ -5,18 +5,12 @@ namespace DorsetDigital\SchemaManager\Model\Schema;
 use DorsetDigital\SchemaManager\Control\SchemaIDs;
 class ProductSchema extends Schema
 {
-    public static function create(string $url, string $name, ?string $description = null): static
+    public static function create(string $identifier, string $name, ?string $description = null): static
     {
-        $url = rtrim($url, '/') . '/';
-
         $data = [
             '@type' => 'Product',
-            '@id' => $url . '#product',
-            'url' => $url,
+            '@id' => SchemaIDs::forEntity('product', $identifier),
             'name' => $name,
-            'isPartOf' => [
-                '@id' => SchemaIDs::forPageURL($url, 'webpage'),
-            ],
         ];
 
         if ($description) {
@@ -24,6 +18,31 @@ class ProductSchema extends Schema
         }
 
         return new static($data);
+    }
+
+    public function setURL(?string $url): static
+    {
+        $previousURL = $this->data['url'] ?? null;
+        if ($url !== null) {
+            $this->data['url'] = $url;
+        } else {
+            unset($this->data['url']);
+        }
+
+        // Keep an implicitly inherited Offer URL in sync with the canonical
+        // URL, without overriding an explicitly supplied Offer URL.
+        if (isset($this->data['offers'])) {
+            $offerURL = $this->data['offers']['url'] ?? null;
+            if ($offerURL === null || $offerURL === $previousURL) {
+                if ($url !== null) {
+                    $this->data['offers']['url'] = $url;
+                } else {
+                    unset($this->data['offers']['url']);
+                }
+            }
+        }
+
+        return $this;
     }
 
     public function setImage(?string $url): static

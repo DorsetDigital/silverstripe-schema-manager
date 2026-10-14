@@ -3,27 +3,24 @@
 namespace DorsetDigital\SchemaManager\Tests\Model\Schema;
 
 use DorsetDigital\SchemaManager\Model\Schema\FAQPageSchema;
-use PHPUnit\Framework\TestCase;
+use SilverStripe\Dev\SapphireTest;
 
-class FAQPageSchemaTest extends TestCase
+class FAQPageSchemaTest extends SapphireTest
 {
     public function testCreateBuildsFaqPageAsPartOfWebPage(): void
     {
-        $schema = FAQPageSchema::create('https://example.com/faqs');
+        $schema = FAQPageSchema::create('faqs');
         $data = $schema->toArray();
 
         $this->assertSame('FAQPage', $data['@type']);
-        $this->assertSame('https://example.com/faqs/#faq', $data['@id']);
-        $this->assertSame(
-            ['@id' => 'https://example.com/faqs/#webpage'],
-            $data['isPartOf']
-        );
+        $this->assertStringEndsWith('#faqpage-faqs', $data['@id']);
+        $this->assertArrayNotHasKey('isPartOf', $data);
         $this->assertSame([], $data['mainEntity']);
     }
 
     public function testQuestionsCanBeAddedFluently(): void
     {
-        $schema = FAQPageSchema::create('https://example.com/faqs/')
+        $schema = FAQPageSchema::create('faqs')
             ->addQuestion('Question one?', 'Answer one.')
             ->addQuestion('Question two?', 'Answer two.');
 

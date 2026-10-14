@@ -2,11 +2,13 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
+
 class QuotationSchema extends Schema
 {
-    public static function create(string $id, string $text): static
+    public static function create(string $identifier, string $text): static
     {
-        return new static(['@type' => 'Quotation', '@id' => $id, 'text' => $text]);
+        return new static(['@type' => 'Quotation', '@id' => SchemaIDs::forEntity('quotation', $identifier), 'text' => $text]);
     }
 
     public function setAuthor(string $name): static { $this->data['author'] = ['@type' => 'Person', 'name' => $name]; return $this; }

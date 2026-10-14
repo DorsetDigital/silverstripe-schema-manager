@@ -2,15 +2,17 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
+
 class LocalBusinessSchema extends Schema
 {
-    public static function create(string $id, string $name, ?string $url = null): static
+    public static function create(string $identifier, string $name): static
     {
-        $data = ['@type' => 'LocalBusiness', '@id' => $id, 'name' => $name];
-        if ($url) $data['url'] = $url;
+        $data = ['@type' => 'LocalBusiness', '@id' => SchemaIDs::forEntity('localbusiness', $identifier), 'name' => $name];
         return new static($data);
     }
 
+    public function setURL(?string $url): static { if ($url !== null) $this->data['url'] = $url; else unset($this->data['url']); return $this; }
     public function setDescription(?string $description): static { if ($description) $this->data['description'] = $description; return $this; }
     public function setImage(?string $url): static { if ($url) $this->data['image'] = $url; return $this; }
     public function setTelephone(?string $telephone): static { if ($telephone) $this->data['telephone'] = $telephone; return $this; }

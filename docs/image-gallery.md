@@ -7,7 +7,7 @@ use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use DorsetDigital\SchemaManager\Model\Schema\ImageGallerySchema;
 
 $gallerySchema = ImageGallerySchema::create(
-    $page->AbsoluteLink(),
+    'gallery-' . $page->ID,
     $page->Title,
     $page->MetaDescription
 );
@@ -25,7 +25,7 @@ foreach ($page->GalleryImages() as $image) {
 SchemaRegistry::add($gallerySchema);
 ```
 
-The gallery is linked to the automatic `WebPage` with `isPartOf` by default. For a dedicated gallery page, call `$gallerySchema->setMainEntityOfPage($page->AbsoluteLink())`. Individual images are `ImageObject` entries under `hasPart`, using `contentUrl` for the actual image asset. Name, description, width and height are optional.
+The gallery has no automatic WebPage relationship. Use `setIsPartOfPage($pageURL)` when appropriate. For a dedicated gallery page, call `$gallerySchema->setMainEntityOfPage($page->AbsoluteLink())`. Individual images are `ImageObject` entries under `hasPart`, using `contentUrl` for the actual image asset. Name, description, width and height are optional.
 
 A representative thumbnail can be set with:
 
@@ -37,13 +37,22 @@ Pages containing multiple galleries can give each gallery a stable identifier us
 
 ```php
 $gallerySchema = ImageGallerySchema::create(
-    $page->AbsoluteLink(),
-    $gallery->Title,
-    null,
-    (string) $gallery->ID
+    'gallery-' . $gallery->ID,
+    $gallery->Title
 );
 ```
 
-This produces an entity ID such as `https://example.com/gallery/#imagegallery-42` while the default remains `#imagegallery`.
+This produces a site-scoped entity ID ending in `#imagegallery-gallery-42`.
 
 The builder also inherits `Schema::update()` for additional Schema.org properties.
+
+## Public builder methods
+
+Methods declared by this builder, in addition to the [shared Schema methods](developer-api.md#shared-schema-builder-methods).
+
+| Method and parameters | Purpose |
+| --- | --- |
+| `public static function create(string $identifier, ?string $name = null, ?string $description = null)` | Create a new schema entity. |
+| `public function setURL(?string $url)` | Set the u r l property. |
+| `public function addImage( string $url, ?string $name = null, ?string $description = null, ?int $width = null, ?int $height = null )` | Add an item to the image collection. |
+| `public function setThumbnail(?string $url)` | Set the thumbnail property. |

@@ -1,13 +1,8 @@
 # Silverstripe Schema Manager
 
-Structured-data management for Silverstripe CMS 6.
+Structured data for **Silverstripe CMS 5 and 6**, combining automatic site and page metadata with optional, content-specific Schema.org entities.
 
-Schema Manager combines CMS-managed site information with automatic page schema and a request-scoped registry. Schema.org entities are emitted as a single linked JSON-LD `@graph` in the page `<head>`.
-
-## Requirements
-
-- PHP 8.3+
-- Silverstripe CMS 6
+Schema Manager produces a linked JSON-LD `@graph` and inserts it into the page's `<head>` automatically. It provides a consistent way to describe your organisation, website and content to search engines, without requiring changes to your templates.
 
 ## Installation
 
@@ -16,196 +11,54 @@ composer require dorsetdigital/silverstripe-schema-manager
 vendor/bin/sake dev/build flush=1
 ```
 
-## What is automatic?
+Requires PHP 8.1+ for CMS 5 or PHP 8.3+ for CMS 6.
 
-By default Schema Manager adds site, page and breadcrumb schema to normal `ContentController` page requests:
+## What happens automatically?
 
-```text
-Organization
-    ↑ publisher
-WebSite
-    ↑ isPartOf
-WebPage
+On standard Silverstripe pages, Schema Manager provides:
 
-BreadcrumbList
-```
+- **Organization** — details of your organisation, managed through SiteConfig.
+- **WebSite** — the website and its relationship to the organisation.
+- **WebPage** — page URL, title, description and available publication metadata.
+- **BreadcrumbList** — the page's position in the site hierarchy.
 
-Stable entity IDs are based on the canonical site/page URLs:
+These entities are linked together using stable identifiers and rendered as a single JSON-LD graph. **No template changes or additional PHP are required.**
 
-```text
-https://example.com/#organisation
-https://example.com/#website
-https://example.com/about/#webpage
-https://example.com/about/#breadcrumb
-```
-
-The JSON-LD is inserted automatically with Silverstripe Requirements. No template change is required.
-
-## Automatic WebPage schema
-
-Every normal `SiteTree` page receives a `WebPage` entity containing its URL, title, description where available, created/modified dates and a reference to the site's `WebSite` entity. No page extension is required.
-
-## Configuration
-
-Each automatic layer can be disabled independently:
-
-```yaml
-DorsetDigital\SchemaManager\Service\SchemaManager:
-  automatic_organisation_schema: true
-  automatic_website_schema: true
-  automatic_webpage_schema: true
-  automatic_breadcrumb_schema: true
-```
+Automatic organisation, website, webpage and breadcrumb output can each be enabled or disabled independently. See [Site schema](docs/site-schema.md) and [Breadcrumbs](docs/breadcrumbs.md).
 
 ## Supported schema types
 
-Detailed examples and configuration are kept in separate documentation:
+Beyond the automatically generated entities, the module provides builders and integrations for:
 
-- [Site schema](docs/site-schema.md) — `Organization` and `WebSite`
-- [Breadcrumbs](docs/breadcrumbs.md) — automatic and manual `BreadcrumbList`
-- [FAQPage](docs/faq.md) — questions and accepted answers
-- [ImageGallery](docs/image-gallery.md) — image collections and `ImageObject` metadata
-- [Product](docs/product.md) — products, offers, stock and brands
-- [Service](docs/service.md) — services, providers and pricing
-- [JobPosting](docs/job-posting.md) — vacancies, locations and salaries
-- [BlogPosting](docs/blog-posting.md) — optional Silverstripe Blog integration
+| Schema.org type | Documentation |
+| --- | --- |
+| Organization and WebSite | [Site schema](docs/site-schema.md) |
+| WebPage | [WebPage builder](docs/web-page.md) |
+| BreadcrumbList | [Breadcrumbs](docs/breadcrumbs.md) |
+| FAQPage | [FAQs](docs/faq.md) |
+| ImageGallery | [Image galleries](docs/image-gallery.md) |
+| VideoObject | [Videos (YouTube and Vimeo)](docs/video-object.md) |
+| ItemList | [Content lists](docs/item-list.md) |
+| Product | [Products](docs/product.md) |
+| Service | [Services](docs/service.md) |
+| JobPosting | [Job postings](docs/job-posting.md) |
+| BlogPosting | [Blog integration](docs/blog-posting.md) |
+| Event | [Events](docs/event.md) |
+| Person | [People](docs/person.md) |
+| LocalBusiness | [Local businesses](docs/local-business.md) |
+| Review and Rating | [Reviews and ratings](docs/review.md) |
+| AggregateRating | [Aggregate ratings](docs/aggregate-rating.md) |
+| Quotation | [Quotations](docs/quotation.md) |
 
-Page-level typed builders link to their `WebPage` with `isPartOf` by default. When an entity is the primary subject of a dedicated page, `setMainEntityOfPage($pageURL)` promotes that relationship explicitly.
+## Additional functionality
 
-All typed builders inherit `Schema::update()`, allowing projects to add less common Schema.org properties without the module needing to model every possible field.
+**CMS page annotations:** Editors can add structured data to individual pages through a Schema tab. Built-in annotations cover Event and Service; developers can configure additional definitions. [Read the page annotation guide](docs/page-annotations.md).
 
-## Adding schema manually
+**FAQ aggregation:** Questions from multiple sections can be combined into a single FAQPage entity for the page. [Read the FAQ guide](docs/faq.md).
 
-Raw entities can still be registered directly:
+**Optional Blog integration:** Projects using `silverstripe/blog` can opt in to automatic BlogPosting output. [Read the Blog guide](docs/blog-posting.md).
 
-```php
-use DorsetDigital\SchemaManager\Control\SchemaRegistry;
-
-SchemaRegistry::addEntity(
-    'https://example.com/#service',
-    [
-        '@type' => 'Service',
-        '@id' => 'https://example.com/#service',
-        'name' => 'Example service',
-    ]
-);
-```
-
-If an entity is registered again using the same `@id`, its data is recursively merged with the existing entity.
-
-Typed schema objects can also be registered:
-
-```php
-SchemaRegistry::add($schema);
-```
-
-where `$schema` extends `DorsetDigital\SchemaManager\Model\Schema\Schema`.
-
-## Extension point
-
-The registry API can be called directly from application code; an extension hook is not required. For reusable integrations that need to contribute schema automatically to arbitrary pages, Schema Manager also calls this Silverstripe extension hook before page entities are registered:
-
-```php
-updateSchemaManagerEntities(array &$entities)
-```
-
-Extensions can therefore append, remove or modify typed schema objects without replacing the registry or controller integration. This is primarily an integration mechanism rather than a requirement for ordinary project code.
-
-For example:
-
-```php
-use SilverStripe\Core\Extension;
-
-class MyPageSchemaExtension extends Extension
-{
-    public function updateSchemaManagerEntities(array &$entities): void
-    {
-        // Add another Schema object, or update an existing one.
-    }
-}
-```
-
-The same hook is called on `SiteConfig` for site-wide entities.
-
-The bundled Blog integration uses this mechanism, so it also provides a reference implementation for future module integrations.
-
-## Registry API
-
-### `SchemaRegistry::add(Schema $schema)`
-
-Registers a typed schema object. It can be called directly from controllers or other application code. Relationships are resolved when the graph is rendered, so schemas registered independently still participate in automatic `WebPage.mainEntity` and breadcrumb relationship resolution.
-
-### `SchemaRegistry::addEntity(string $id, array $data)`
-
-Registers a raw Schema.org entity. Existing data under the same ID is recursively merged, including entities previously registered as typed schemas with `add()`. This allows project code to augment a typed entity without replacing it.
-
-### `SchemaRegistry::addFAQ(string $question, string $answer, ?string $pageURL = null)`
-
-Deprecated compatibility helper for adding FAQ questions. New code should use `FAQPageSchema` and `SchemaRegistry::add()`.
-
-### `SchemaRegistry::addBreadCrumbs(SiteTree $page, int $maxDepth = 20, bool|string $stopAtPageType = false, bool $showHidden = false)`
-
-Adds a `BreadcrumbList` using Silverstripe's standard breadcrumb hierarchy. The method remains available when automatic breadcrumb schema is disabled.
-
-### `SchemaRegistry::getGraph(): array`
-
-Returns all registered entities.
-
-### `SchemaRegistry::getSchema(): array`
-
-Returns the complete structure containing `@context` and `@graph`.
-
-### `SchemaRegistry::getJSON(): string`
-
-Returns JSON suitable for an `application/ld+json` script element.
-
-### `SchemaRegistry::flush(): void`
-
-Clears the request registry.
-
-## Page annotations (work in progress)
-
-The new declarative annotation foundation provides Event and Service definitions and supports custom PHP handlers. The CMS editing and published-page integration are not yet implemented. See [Page annotations and Advanced Usage](docs/page-annotations.md) for the YAML format and a custom handler example.
-
-## Documentation
-
-The `docs/` directory contains the detailed guides for each supported schema type. The README is intentionally focused on installation, automatic behaviour, configuration and the common registry API.
-
-## Project structure
-
-```text
-_config/
-  schema-manager.yml
-src/
-  Control/
-    SchemaRegistry.php
-  Extension/
-    BlogPostSchemaExtension.php
-    SchemaControllerExtension.php
-    SiteConfigSchemaExtension.php
-  Model/
-    Schema/
-      BlogPostingSchema.php
-      FAQPageSchema.php
-      ImageGallerySchema.php
-      JobPostingSchema.php
-      OrganisationSchema.php
-      ProductSchema.php
-      Schema.php
-      ServiceSchema.php
-      WebPageSchema.php
-      WebsiteSchema.php
-  Service/
-    SchemaManager.php
-```
-
-The module is deliberately split into small responsibilities:
-
-- **schema classes** build individual Schema.org entities
-- **the registry** collects, merges and renders the graph
-- **Silverstripe extensions** decide which entities should be registered for a request
-
-This keeps the public API small while leaving room for additional schema types and project-specific extensions.
+**Developer integrations:** Register custom entities, link them to pages or existing site entities, and extend the generated graph through hooks. [Working with schema entities](docs/schema-entities.md) · [Developer API reference](docs/developer-api.md).
 
 ## License
 

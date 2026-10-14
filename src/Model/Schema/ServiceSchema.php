@@ -6,21 +6,12 @@ use DorsetDigital\SchemaManager\Control\SchemaIDs;
 
 class ServiceSchema extends Schema
 {
-    public static function create(string $url, string $name, ?string $description = null): static
+    public static function create(string $identifier, string $name, ?string $description = null): static
     {
-        $url = rtrim($url, '/') . '/';
-
         $data = [
             '@type' => 'Service',
-            '@id' => $url . '#service',
-            'url' => $url,
+            '@id' => SchemaIDs::forEntity('service', $identifier),
             'name' => $name,
-            'isPartOf' => [
-                '@id' => SchemaIDs::forPageURL($url, 'webpage'),
-            ],
-            'provider' => [
-                '@id' => SchemaIDs::organisation(),
-            ],
         ];
 
         if ($description) {
@@ -28,6 +19,31 @@ class ServiceSchema extends Schema
         }
 
         return new static($data);
+    }
+
+    public function setURL(?string $url): static
+    {
+        $previousURL = $this->data['url'] ?? null;
+        if ($url !== null) {
+            $this->data['url'] = $url;
+        } else {
+            unset($this->data['url']);
+        }
+
+        // Keep an implicitly inherited Offer URL in sync with the canonical
+        // URL, without overriding an explicitly supplied Offer URL.
+        if (isset($this->data['offers'])) {
+            $offerURL = $this->data['offers']['url'] ?? null;
+            if ($offerURL === null || $offerURL === $previousURL) {
+                if ($url !== null) {
+                    $this->data['offers']['url'] = $url;
+                } else {
+                    unset($this->data['offers']['url']);
+                }
+            }
+        }
+
+        return $this;
     }
 
     public function setAreaServed(string|array|null $area): static
@@ -39,11 +55,13 @@ class ServiceSchema extends Schema
         return $this;
     }
 
-    public function setProvider(string $id): static
+    public function setProvider(?string $id): static
     {
-        $this->data['provider'] = [
-            '@id' => $id,
-        ];
+        if ($id !== null) {
+            $this->data['provider'] = ['@id' => $id];
+        } else {
+            unset($this->data['provider']);
+        }
 
         return $this;
     }

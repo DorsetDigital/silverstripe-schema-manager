@@ -3,6 +3,8 @@
 namespace DorsetDigital\SchemaManager\Tests\Annotation;
 
 use DorsetDigital\SchemaManager\Annotation\GenericAnnotationHandler;
+use DorsetDigital\SchemaManager\Annotation\SchemaAnnotationFactory;
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 
@@ -26,6 +28,38 @@ class GenericAnnotationHandlerTest extends SapphireTest
 
         $this->assertSame('Open Day', $schema->toArray()['name']);
         $this->assertSame(['@type' => 'Organization', 'name' => 'Village Hall Committee'], $schema->toArray()['organizer']);
+    }
+
+    public function testServicePageAnnotationReferencesItsWebPage(): void
+    {
+        $page = new SiteTree(['Title' => 'Data Analytics']);
+        $schema = (new SchemaAnnotationFactory())->build($page, 'service', []);
+
+        $this->assertNotNull($schema);
+        $this->assertSame(
+            ['@id' => SchemaIDs::webPage($page)],
+            $schema->toArray()['mainEntityOfPage']
+        );
+    }
+
+    public function testEventPageAnnotationReferencesItsWebPage(): void
+    {
+        $page = new SiteTree(['Title' => 'Open Day']);
+        $schema = (new SchemaAnnotationFactory())->build($page, 'event', [
+            'startDate' => '2026-11-14T10:00:00+00:00',
+        ]);
+
+        $this->assertNotNull($schema);
+        $this->assertSame(
+            ['@id' => SchemaIDs::webPage($page)],
+            $schema->toArray()['mainEntityOfPage']
+        );
+    }
+
+    public function testIncompleteEventPageAnnotationIsSkipped(): void
+    {
+        $page = new SiteTree(['Title' => 'Open Day']);
+        $this->assertNull((new SchemaAnnotationFactory())->build($page, 'event', []));
     }
 
     public function testMissingRequiredFieldSkipsSchema(): void

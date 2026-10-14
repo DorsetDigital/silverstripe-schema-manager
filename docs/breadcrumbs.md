@@ -21,3 +21,14 @@ SchemaRegistry::addBreadCrumbs(
     showHidden: false
 );
 ```
+
+## Public builder methods
+
+The following are the methods declared by these builders; see also [shared Schema methods](developer-api.md#shared-schema-builder-methods).
+
+### `BreadcrumbListSchema`
+
+| Method and parameters | Purpose |
+| --- | --- |
+| `public static function create(string $identifier)` | Create the schema object. |
+| `public function addItem(string $name, string $url)` | Add a item. |

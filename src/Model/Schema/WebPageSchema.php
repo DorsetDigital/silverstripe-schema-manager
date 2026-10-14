@@ -3,58 +3,30 @@
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
 use DorsetDigital\SchemaManager\Control\SchemaIDs;
-use SilverStripe\CMS\Model\SiteTree;
 
 class WebPageSchema extends Schema
 {
-    public static function fromPage(SiteTree $page): static
+    public static function create(string $identifier, string $name): static
     {
-        $url = rtrim($page->AbsoluteLink(), '/') . '/';
-
-        $data = [
+        return new static([
             '@type' => 'WebPage',
-            '@id' => SchemaIDs::webPage($page),
-            'url' => $url,
-            'name' => $page->Title,
-            'isPartOf' => [
-                '@id' => SchemaIDs::website(),
-            ],
-        ];
-
-        if ($page->MetaDescription) {
-            $data['description'] = $page->MetaDescription;
-        }
-
-        if ($page->Created) {
-            $data['datePublished'] = $page->Created;
-        }
-
-        if ($page->LastEdited) {
-            $data['dateModified'] = $page->LastEdited;
-        }
-
-        return new static($data);
+            '@id' => SchemaIDs::forEntity('webpage', $identifier),
+            'name' => $name,
+        ]);
     }
 
-    public function setBreadcrumb(?Schema $schema): static
+    public function setURL(?string $url): static { return $this->setOptional('url', $url); }
+    public function setDescription(?string $description): static { return $this->setOptional('description', $description); }
+    public function setDatePublished(?string $date): static { return $this->setOptional('datePublished', $date); }
+    public function setDateModified(?string $date): static { return $this->setOptional('dateModified', $date); }
+    public function setIsPartOf(?string $id): static { return $this->setOptional('isPartOf', $id === null ? null : ['@id' => $id]); }
+    public function setBreadcrumb(?string $id): static { return $this->setOptional('breadcrumb', $id === null ? null : ['@id' => $id]); }
+    public function setMainEntity(?string $id): static { return $this->setOptional('mainEntity', $id === null ? null : ['@id' => $id]); }
+
+    private function setOptional(string $key, mixed $value): static
     {
-        if ($schema) {
-            $this->data['breadcrumb'] = ['@id' => $schema->getID()];
-        } else {
-            unset($this->data['breadcrumb']);
-        }
-
-        return $this;
-    }
-
-    public function setMainEntity(?Schema $schema): static
-    {
-        if ($schema) {
-            $this->data['mainEntity'] = ['@id' => $schema->getID()];
-        } else {
-            unset($this->data['mainEntity']);
-        }
-
+        if ($value === null) unset($this->data[$key]);
+        else $this->data[$key] = $value;
         return $this;
     }
 }

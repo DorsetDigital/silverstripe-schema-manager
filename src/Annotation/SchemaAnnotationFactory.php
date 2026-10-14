@@ -22,6 +22,11 @@ class SchemaAnnotationFactory
             throw new \InvalidArgumentException(sprintf('Annotation handler %s must implement %s', $handlerClass, SchemaAnnotationHandler::class));
         }
 
-        return $handler->build($page, $values, $definition);
+        $schema = $handler->build($page, $values, $definition);
+        if ($schema && !isset($schema->toArray()['mainEntityOfPage'])) {
+            $schema->setMainEntityOfPage($page->AbsoluteLink());
+        }
+
+        return $schema;
     }
 }

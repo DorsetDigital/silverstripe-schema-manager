@@ -2,18 +2,15 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
+
 class FAQPageSchema extends Schema
 {
-    public static function create(string $url): static
+    public static function create(string $identifier): static
     {
-        $url = rtrim($url, '/') . '/';
-
         return new static([
             '@type' => 'FAQPage',
-            '@id' => $url . '#faq',
-            'isPartOf' => [
-                '@id' => $url . '#webpage',
-            ],
+            '@id' => SchemaIDs::forEntity('faqpage', $identifier),
             'mainEntity' => [],
         ]);
     }

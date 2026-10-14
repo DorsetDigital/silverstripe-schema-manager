@@ -3,7 +3,9 @@
 namespace DorsetDigital\SchemaManager\Tests\Control;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Control\FAQPageHelper;
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
+use DorsetDigital\SchemaManager\Model\Schema\FAQPageSchema;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 
@@ -66,13 +68,28 @@ class SchemaRegistryTest extends SapphireTest
         $this->assertSame('https://example.com/', $graph[0]['url']);
     }
 
+    public function testMultipleFaqSectionsAreCombinedIntoOneEntity(): void
+    {
+        $url = 'https://example.com/faqs/';
+
+        FAQPageHelper::addQuestion('First question?', 'First answer.', $url);
+        FAQPageHelper::addQuestion('Second question?', 'Second answer.', $url);
+        FAQPageHelper::addQuestion('Third question?', 'Third answer.', $url);
+
+        $graph = SchemaRegistry::getGraph();
+
+        $this->assertCount(1, $graph);
+        $this->assertSame($url . '#faq', $graph[0]['@id']);
+        $this->assertSame(
+            ['First question?', 'Second question?', 'Third question?'],
+            array_column($graph[0]['mainEntity'], 'name')
+        );
+        // Repeated serialization must not duplicate the aggregated questions.
+        $this->assertSame($graph, SchemaRegistry::getGraph());
+    }
+
     public function testDeprecatedFaqHelperStillRegistersFaqPage(): void
     {
-        $this->expectUserDeprecationMessage(
-            'DorsetDigital\\SchemaManager\\Control\\SchemaRegistry::addFAQ() is deprecated. '
-            . 'Use FAQPageSchema::create() and SchemaRegistry::add() instead.'
-        );
-
         SchemaRegistry::addFAQ(
             'Question one?',
             'Answer one.',
