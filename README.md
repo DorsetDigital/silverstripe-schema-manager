@@ -38,6 +38,7 @@ Beyond the automatically generated entities, the module provides builders and in
 | FAQPage | [FAQs](docs/faq.md) |
 | ImageGallery | [Image galleries](docs/image-gallery.md) |
 | VideoObject | [Videos (YouTube and Vimeo)](docs/video-object.md) |
+| ItemList | [Content lists](docs/item-list.md) |
 | Product | [Products](docs/product.md) |
 | Service | [Services](docs/service.md) |
 | JobPosting | [Job postings](docs/job-posting.md) |
