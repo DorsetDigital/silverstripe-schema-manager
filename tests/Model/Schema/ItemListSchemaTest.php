@@ -24,7 +24,15 @@ class ItemListSchemaTest extends SapphireTest
         $this->assertSame(2, $data['itemListElement'][1]['position']);
         $this->assertSame($id, $data['itemListElement'][0]['item']['@id']);
         $this->assertSame('https://example.com/news/article/', $data['itemListElement'][0]['item']['url']);
-        $this->assertStringEndsWith('/home/#webpage', $data['isPartOf']['@id']);
+        $this->assertArrayNotHasKey('isPartOf', $data);
+    }
+
+    public function testInheritedIsPartOfSetterDoesNotAppearInOutput(): void
+    {
+        $list = ItemListSchema::create('related', 'Related pages')
+            ->setIsPartOfPage('https://example.com/home/');
+
+        $this->assertArrayNotHasKey('isPartOf', $list->toArray());
     }
 
     public function testSupportsSimpleLinkedItems(): void
