@@ -2,6 +2,7 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaDate;
 use DorsetDigital\SchemaManager\Control\SchemaIDs;
 
 class VideoObjectSchema extends Schema
@@ -25,7 +26,7 @@ class VideoObjectSchema extends Schema
     public function setEmbedURL(?string $url): static { return $this->setOptional('embedUrl', $url); }
     public function setContentURL(?string $url): static { return $this->setOptional('contentUrl', $url); }
     public function setThumbnailURL(?string $url): static { return $this->setOptional('thumbnailUrl', $url); }
-    public function setUploadDate(?string $date): static { return $this->setOptional('uploadDate', $date); }
+    public function setUploadDate(?string $date): static { return $this->setOptional('uploadDate', SchemaDate::format($date)); }
     public function setDuration(?string $duration): static { return $this->setOptional('duration', $duration); }
 
     private function setOptional(string $key, mixed $value): static

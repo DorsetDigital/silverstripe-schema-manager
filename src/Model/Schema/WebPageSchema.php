@@ -2,6 +2,7 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaDate;
 use DorsetDigital\SchemaManager\Control\SchemaIDs;
 
 class WebPageSchema extends Schema
@@ -17,8 +18,8 @@ class WebPageSchema extends Schema
 
     public function setURL(?string $url): static { return $this->setOptional('url', $url); }
     public function setDescription(?string $description): static { return $this->setOptional('description', $description); }
-    public function setDatePublished(?string $date): static { return $this->setOptional('datePublished', $date); }
-    public function setDateModified(?string $date): static { return $this->setOptional('dateModified', $date); }
+    public function setDatePublished(?string $date): static { return $this->setOptional('datePublished', SchemaDate::format($date)); }
+    public function setDateModified(?string $date): static { return $this->setOptional('dateModified', SchemaDate::format($date)); }
     public function setIsPartOf(?string $id): static { return $this->setOptional('isPartOf', $id === null ? null : ['@id' => $id]); }
     public function setBreadcrumb(?string $id): static { return $this->setOptional('breadcrumb', $id === null ? null : ['@id' => $id]); }
     public function setMainEntity(?string $id): static { return $this->setOptional('mainEntity', $id === null ? null : ['@id' => $id]); }
