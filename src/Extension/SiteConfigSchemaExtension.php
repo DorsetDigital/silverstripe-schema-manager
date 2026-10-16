@@ -10,6 +10,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TextField;
+use function _t;
 
 class SiteConfigSchemaExtension extends Extension
 {
@@ -37,22 +38,22 @@ class SiteConfigSchemaExtension extends Extension
     public function updateCMSFields(FieldList $fields): void
     {
         $fields->addFieldsToTab('Root.Schema', [
-            HeaderField::create('SchemaOrganisationHeading', 'Organisation'),
-            TextField::create('SchemaOrganisationName', 'Organisation name')
-                ->setDescription('Defaults to the site title when left blank.'),
-            TextField::create('SchemaOrganisationLegalName', 'Legal name'),
-            TextField::create('SchemaOrganisationPhone', 'Telephone'),
-            EmailField::create('SchemaOrganisationEmail', 'Email'),
-            UploadField::create('SchemaOrganisationLogo', 'Logo')
+            HeaderField::create('SchemaOrganisationHeading', _t('SchemaManager.ORGANISATION', 'Organisation')),
+            TextField::create('SchemaOrganisationName', _t('SchemaManager.ORGANISATION_NAME', 'Organisation name'))
+                ->setDescription(_t('SchemaManager.ORGANISATION_NAME_HELP', 'Defaults to the site title when left blank.')),
+            TextField::create('SchemaOrganisationLegalName', _t('SchemaManager.LEGAL_NAME', 'Legal name')),
+            TextField::create('SchemaOrganisationPhone', _t('SchemaManager.TELEPHONE', 'Telephone')),
+            EmailField::create('SchemaOrganisationEmail', _t('SchemaManager.EMAIL', 'Email')),
+            UploadField::create('SchemaOrganisationLogo', _t('SchemaManager.LOGO', 'Logo'))
                 ->setFolderName('schema'),
-            HeaderField::create('SchemaOrganisationAddressHeading', 'Address'),
-            TextField::create('SchemaOrganisationStreetAddress', 'Street address'),
-            TextField::create('SchemaOrganisationLocality', 'Town / locality'),
-            TextField::create('SchemaOrganisationRegion', 'County / region'),
-            TextField::create('SchemaOrganisationPostalCode', 'Postcode'),
-            TextField::create('SchemaOrganisationCountry', 'Country'),
-            TextareaField::create('SchemaOrganisationSameAs', 'Profile URLs')
-                ->setDescription('One external profile URL per line, for example LinkedIn, Facebook or Instagram.'),
+            HeaderField::create('SchemaOrganisationAddressHeading', _t('SchemaManager.ADDRESS', 'Address')),
+            TextField::create('SchemaOrganisationStreetAddress', _t('SchemaManager.STREET_ADDRESS', 'Street address')),
+            TextField::create('SchemaOrganisationLocality', _t('SchemaManager.LOCALITY', 'Town / locality')),
+            TextField::create('SchemaOrganisationRegion', _t('SchemaManager.REGION', 'County / region')),
+            TextField::create('SchemaOrganisationPostalCode', _t('SchemaManager.POSTCODE', 'Postcode')),
+            TextField::create('SchemaOrganisationCountry', _t('SchemaManager.COUNTRY', 'Country')),
+            TextareaField::create('SchemaOrganisationSameAs', _t('SchemaManager.PROFILE_URLS', 'Profile URLs'))
+                ->setDescription(_t('SchemaManager.PROFILE_URLS_HELP', 'One external profile URL per line, for example LinkedIn, Facebook or Instagram.')),
         ]);
     }
 }
