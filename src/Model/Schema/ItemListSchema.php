@@ -47,6 +47,19 @@ class ItemListSchema extends Schema
         return $this->appendItem($item);
     }
 
+    /**
+     * ItemList is not a CreativeWork, so isPartOf is not a valid property.
+     * Keep the inherited setter available for backwards compatibility, but
+     * omit the relationship from serialized ItemList schema.
+     */
+    public function toArray(): array
+    {
+        $data = parent::toArray();
+        unset($data['isPartOf']);
+
+        return $data;
+    }
+
     private function appendItem(array $item): static
     {
         $position = count($this->data['itemListElement']) + 1;
