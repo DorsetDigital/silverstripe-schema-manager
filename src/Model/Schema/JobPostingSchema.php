@@ -2,6 +2,7 @@
 
 namespace DorsetDigital\SchemaManager\Model\Schema;
 
+use DorsetDigital\SchemaManager\Control\SchemaDate;
 use DorsetDigital\SchemaManager\Control\SchemaIDs;
 
 class JobPostingSchema extends Schema
@@ -38,7 +39,7 @@ class JobPostingSchema extends Schema
 
     public function setDatePosted(?string $date): static
     {
-        if ($date) {
+        if ($date = SchemaDate::format($date)) {
             $this->data['datePosted'] = $date;
         }
 
@@ -47,7 +48,7 @@ class JobPostingSchema extends Schema
 
     public function setValidThrough(?string $date): static
     {
-        if ($date) {
+        if ($date = SchemaDate::format($date)) {
             $this->data['validThrough'] = $date;
         }
 
