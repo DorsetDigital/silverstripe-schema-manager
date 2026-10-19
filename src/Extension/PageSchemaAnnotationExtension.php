@@ -15,6 +15,7 @@ use SilverStripe\Forms\DatetimeField;
 use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\View\Requirements;
+use function _t;
 
 /**
  * One optional annotation, stored on the versioned SiteTree record.
@@ -31,14 +32,14 @@ class PageSchemaAnnotationExtension extends Extension
         $definitions = SchemaDefinitionRegistry::definitions();
         $options = [];
         foreach ($definitions as $key => $definition) {
-            $options[$key] = $definition['label'] ?? $key;
+            $options[$key] = _t('SchemaManager.ANNOTATION_' . strtoupper($key), $definition['label'] ?? $key);
         }
 
         $fields->addFieldToTab('Root.Schema', DropdownField::create(
             'SchemaAnnotationType',
-            'Page annotation',
+            _t('SchemaManager.PAGE_ANNOTATION', 'Page annotation'),
             $options
-        )->setEmptyString('None'));
+        )->setEmptyString(_t('SchemaManager.NONE', 'None')));
 
         $values = json_decode((string) $this->owner->SchemaAnnotationValues, true);
         $values = is_array($values) ? $values : [];
@@ -49,7 +50,7 @@ class PageSchemaAnnotationExtension extends Extension
         ));
 
         foreach ($definitions as $key => $definition) {
-            $description = $definition['description'] ?? 'Add structured data for this page. Title and URL are taken from the page automatically.';
+            $description = _t('SchemaManager.ANNOTATION_HELP_' . strtoupper($key), $definition['description'] ?? _t('SchemaManager.ANNOTATION_HELP', 'Add structured data for this page. Title and URL are taken from the page automatically.'));
             $sources = [];
             foreach (($definition['fields'] ?? []) as $property => $config) {
                 if (is_array($config) && !empty($config['source'])) {
@@ -57,7 +58,7 @@ class PageSchemaAnnotationExtension extends Extension
                 }
             }
             if ($sources) {
-                $description .= ' Automatically populated: ' . implode(', ', $sources) . '.';
+                $description .= ' ' . sprintf(_t('SchemaManager.AUTO_POPULATED', 'Automatically populated: %s.'), implode(', ', $sources));
             }
             $fields->addFieldToTab('Root.Schema', LiteralField::create(
                 'SchemaAnnotationHelp_' . $key,
@@ -70,7 +71,7 @@ class PageSchemaAnnotationExtension extends Extension
                 }
 
                 $name = 'SchemaAnnotationEditor_' . $key . '_' . $property;
-                $label = $config['label'] ?? ucfirst($property);
+                $label = _t('SchemaManager.FIELD_' . strtoupper($property), $config['label'] ?? ucfirst($property));
                 $value = $key === $this->owner->SchemaAnnotationType
                     ? ($values[$property] ?? ($config['default'] ?? null))
                     : ($config['default'] ?? null);
@@ -85,14 +86,17 @@ class PageSchemaAnnotationExtension extends Extension
                     'textarea' => TextareaField::create($name, $label),
                     'datetime' => DatetimeField::create($name, $label),
                     'number' => NumericField::create($name, $label),
-                    'select' => DropdownField::create($name, $label, $config['options'] ?? []),
+                    'select' => DropdownField::create($name, $label, array_map(
+                        fn ($option) => _t('SchemaManager.OPTION_' . strtoupper((string) $option), (string) $option),
+                        $config['options'] ?? []
+                    )),
                     default => TextField::create($name, $label),
                 };
                 $field->setValue($value);
                 $field->setAttribute('data-schema-type', $key);
                 $field->setAttribute('data-schema-property', $property);
                 if (!empty($config['required'])) {
-                    $field->setDescription('Required for schema output');
+                    $field->setDescription(_t('SchemaManager.REQUIRED_HELP', 'Required for schema output'));
                 }
                 $fields->addFieldToTab('Root.Schema', $field);
             }
@@ -114,10 +118,10 @@ class PageSchemaAnnotationExtension extends Extension
         $targets = $config['targets'] ?? [];
         $modes = [];
         if (!empty($config['allow_existing'])) {
-            $modes['existing'] = 'Existing entity';
+            $modes['existing'] = _t('SchemaManager.EXISTING_ENTITY', 'Existing entity');
         }
         if (!empty($config['allow_inline'])) {
-            $modes['inline'] = 'Another entity';
+            $modes['inline'] = _t('SchemaManager.ANOTHER_ENTITY', 'Another entity');
         }
         $mode = $value['mode'] ?? (isset($modes['existing']) ? 'existing' : 'inline');
 
@@ -131,24 +135,24 @@ class PageSchemaAnnotationExtension extends Extension
 
         $refs = [];
         if (in_array('Organization', $targets, true)) {
-            $refs[SchemaIDs::organisation()] = 'Our organisation';
+            $refs[SchemaIDs::organisation()] = _t('SchemaManager.OUR_ORGANISATION', 'Our organisation');
         }
-        $refField = DropdownField::create($name . '_id', 'Existing entity', $refs)
-            ->setEmptyString('Select an entity')
+        $refField = DropdownField::create($name . '_id', _t('SchemaManager.EXISTING_ENTITY', 'Existing entity'), $refs)
+            ->setEmptyString(_t('SchemaManager.SELECT_ENTITY', 'Select an entity'))
             ->setValue($value['id'] ?? '');
         $refField->setAttribute('data-schema-type', $key);
         $refField->setAttribute('data-schema-property', $property);
         $refField->setAttribute('data-schema-entity-part', 'id');
         $fields->addFieldToTab('Root.Schema', $refField);
 
-        $typeField = DropdownField::create($name . '_type', 'Entity type', array_combine($targets, $targets) ?: [])
+        $typeField = DropdownField::create($name . '_type', _t('SchemaManager.ENTITY_TYPE', 'Entity type'), array_combine($targets, $targets) ?: [])
             ->setValue($value['type'] ?? ($targets[0] ?? null));
         $typeField->setAttribute('data-schema-type', $key);
         $typeField->setAttribute('data-schema-property', $property);
         $typeField->setAttribute('data-schema-entity-part', 'type');
         $fields->addFieldToTab('Root.Schema', $typeField);
 
-        $nameField = TextField::create($name . '_name', 'Entity name')->setValue($value['name'] ?? '');
+        $nameField = TextField::create($name . '_name', _t('SchemaManager.ENTITY_NAME', 'Entity name'))->setValue($value['name'] ?? '');
         $nameField->setAttribute('data-schema-type', $key);
         $nameField->setAttribute('data-schema-property', $property);
         $nameField->setAttribute('data-schema-entity-part', 'name');
