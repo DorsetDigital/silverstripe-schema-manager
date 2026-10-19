@@ -51,7 +51,8 @@ class SiteConfigSchemaExtension extends Extension
             TextField::create('SchemaOrganisationLocality', _t('SchemaManager.LOCALITY', 'Town / locality')),
             TextField::create('SchemaOrganisationRegion', _t('SchemaManager.REGION', 'County / region')),
             TextField::create('SchemaOrganisationPostalCode', _t('SchemaManager.POSTCODE', 'Postcode')),
-            TextField::create('SchemaOrganisationCountry', _t('SchemaManager.COUNTRY', 'Country')),
+            TextField::create('SchemaOrganisationCountry', _t('SchemaManager.COUNTRY', 'Country'))
+                ->setDescription(_t('SchemaManager.COUNTRY_HELP', 'Use the two-letter country code (ISO 3166-1 alpha-2), e.g. GB for the United Kingdom. Full country names are also accepted, but the two-letter code is recommended.')),
             TextareaField::create('SchemaOrganisationSameAs', _t('SchemaManager.PROFILE_URLS', 'Profile URLs'))
                 ->setDescription(_t('SchemaManager.PROFILE_URLS_HELP', 'One external profile URL per line, for example LinkedIn, Facebook or Instagram.')),
         ]);
