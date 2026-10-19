@@ -13,6 +13,7 @@ en:
     REGION: "County / region"
     POSTCODE: "Postcode"
     COUNTRY: "Country"
+    COUNTRY_HELP: "Use the two-letter country code (ISO 3166-1 alpha-2), e.g. GB for the United Kingdom. Full country names are also accepted, but the two-letter code is recommended."
     PROFILE_URLS: "Profile URLs"
     PROFILE_URLS_HELP: "One external profile URL per line, for example LinkedIn, Facebook or Instagram."
     PAGE_ANNOTATION: "Page annotation"
