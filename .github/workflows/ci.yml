@@ -70,6 +70,12 @@ jobs:
           composer require --no-update --no-interaction \
             "silverstripe/framework:$CMS_VERSION" \
             "silverstripe/cms:$CMS_VERSION"
+          # CMS 5 releases are currently blocked by Composer security advisories.
+          # Allow installation only in the legacy compatibility matrix; keep
+          # advisory blocking enabled for CMS 6 jobs and production consumers.
+          if [ "$CMS_VERSION" = "^5" ]; then
+            composer config --no-plugins policy.advisories.block false
+          fi
           composer update --prefer-dist --no-interaction --no-progress -W
 
       - name: Create minimal Silverstripe test application
