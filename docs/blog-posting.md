@@ -151,3 +151,24 @@ These are the methods declared by the builder classes. All also inherit the [sha
 | `public function setPublisher(?string $id)` | Set the publisher property. |
 | `public function setAuthor(?string $id)` | Set the author property. |
 | `public function setAuthors(array $authors)` | Set the authors property. |
+
+## Optional Blog index schema
+
+The Blog landing page and its filtered or paginated views can publish a `CollectionPage` and an `ItemList` of the **posts actually displayed**. This is opt-in and independent of the `BlogPostSchemaExtension` used on individual articles.
+
+Attach the extension to `Blog` in your project's YAML:
+
+```yaml
+---
+Name: app-schema-blog-index
+After:
+  - schema-manager
+---
+SilverStripe\\Blog\\Model\\Blog:
+  extensions:
+    - DorsetDigital\\SchemaManager\\Extension\\BlogIndexSchemaExtension
+```
+
+The integration runs after the page is rendered, using the current `BlogController::PaginatedList()` so it respects the Blog module's current filters and pagination. Each list entry contains a stable `BlogPosting` reference and the post's absolute URL; individual post schemas remain on their own pages. Each filtered/paginated view has its own stable list ID. The page's existing `WebPage` entity becomes a `CollectionPage`, with a `hasPart` reference to the list, when automatic webpage schema is enabled. Empty lists are omitted. RSS and non-HTML responses are not modified.
+
+The list deliberately does not declare `isPartOf`, because that property is not supported for `ItemList`. Using this integration does not require the site to register full `BlogPosting` entities on the index page.
