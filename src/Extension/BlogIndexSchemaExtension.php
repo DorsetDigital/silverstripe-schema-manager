@@ -6,40 +6,37 @@ use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use DorsetDigital\SchemaManager\Model\Schema\ItemListSchema;
 use DorsetDigital\SchemaManager\Service\SchemaManager;
-use SilverStripe\Blog\Model\BlogController;
-use SilverStripe\Control\Controller;
+use SilverStripe\Blog\Model\Blog;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Extension;
 
 /**
  * Optional Silverstripe Blog index integration.
  *
- * Runs after the response is rendered, when BlogController has already applied
- * its action-specific category, tag, archive or author filters and pagination.
+ * Runs after the Blog action has rendered, while the controller is still active
+ * and its action-specific post list has been populated.
  */
 class BlogIndexSchemaExtension extends Extension
 {
-    public function updateSchemaManagerResponseEntities(array &$entities, HTTPRequest $request): void
+    public function afterCallActionHandler($request, $action, $result): void
     {
-        $blog = $this->owner;
-        $controller = Controller::curr();
-
-        if (!$controller instanceof BlogController || (int) $controller->data()->ID !== (int) $blog->ID) {
-            return;
-        }
-
-        // The Blog controller's RSS endpoint is not a listing page.
-        $action = (string) ($request->param('Action') ?? 'index');
         if (!in_array($action, ['index', 'category', 'tag', 'archive', 'profile'], true)) {
             return;
         }
 
-        $posts = $controller->PaginatedList();
-        if (!$posts) {
+        // Category and tag endpoints can also serve RSS; never register for them.
+        if (strcasecmp((string) ($request->param('Rss') ?? ''), 'rss') === 0) {
             return;
         }
 
-        // Different filtered/paginated views can show different lists.
+        $controller = $this->owner;
+        $blog = $controller->data();
+
+        if (!$blog instanceof Blog || !$blog->exists()) {
+            return;
+        }
+
+        $posts = $controller->PaginatedList();
         $query = $request->getVars();
         ksort($query);
         $viewKey = $request->getURL() . '?' . http_build_query($query);
@@ -49,11 +46,9 @@ class BlogIndexSchemaExtension extends Extension
             return;
         }
 
-        $entities[] = $list;
+        SchemaRegistry::add($list);
 
         if (SchemaManager::config()->get('automatic_webpage_schema')) {
-            // CollectionPage is a subtype of WebPage; hasPart describes the
-            // list without claiming it is the page's main entity.
             SchemaRegistry::addEntity(SchemaIDs::webPage($blog), [
                 '@type' => 'CollectionPage',
                 'hasPart' => SchemaIDs::ref($list->getEntityID()),
