@@ -164,11 +164,11 @@ Name: app-schema-blog-index
 After:
   - schema-manager
 ---
-SilverStripe\\Blog\\Model\\Blog:
+SilverStripe\\Blog\\Model\\BlogController:
   extensions:
     - DorsetDigital\\SchemaManager\\Extension\\BlogIndexSchemaExtension
 ```
 
-The integration runs after the page is rendered, using the current `BlogController::PaginatedList()` so it respects the Blog module's current filters and pagination. Each list entry contains a stable `BlogPosting` reference and the post's absolute URL; individual post schemas remain on their own pages. Each filtered/paginated view has its own stable list ID. The page's existing `WebPage` entity becomes a `CollectionPage`, with a `hasPart` reference to the list, when automatic webpage schema is enabled. Empty lists are omitted. RSS and non-HTML responses are not modified.
+The integration runs from the Blog controller's `afterCallActionHandler` hook, after the action has selected and rendered its posts, using `BlogController::PaginatedList()` so it respects the Blog module's current filters and pagination. Each list entry contains a stable `BlogPosting` reference and the post's absolute URL; individual post schemas remain on their own pages. Each filtered/paginated view has its own stable list ID. The page's existing `WebPage` entity becomes a `CollectionPage`, with a `hasPart` reference to the list, when automatic webpage schema is enabled. Empty lists are omitted. RSS and non-HTML responses are not modified.
 
 The list deliberately does not declare `isPartOf`, because that property is not supported for `ItemList`. Using this integration does not require the site to register full `BlogPosting` entities on the index page.
