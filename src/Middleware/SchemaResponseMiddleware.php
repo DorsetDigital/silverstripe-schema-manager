@@ -3,8 +3,6 @@
 namespace DorsetDigital\SchemaManager\Middleware;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
-use DorsetDigital\SchemaManager\Model\Schema\Schema;
-use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\Middleware\HTTPMiddleware;
@@ -45,19 +43,6 @@ class SchemaResponseMiddleware implements HTTPMiddleware
         // Do not duplicate the script if another integration already emitted it.
         if (preg_match('~<script\b[^>]*\bid\s*=\s*["\']schema-manager-jsonld["\']~i', $body)) {
             return $response;
-        }
-
-        // Late contributions can use the controller's final state (for example,
-        // the current page of a filtered Silverstripe Blog listing).
-        $page = Director::get_current_page();
-        if ($page) {
-            $entities = [];
-            $page->extend('updateSchemaManagerResponseEntities', $entities, $request);
-            foreach ($entities as $entity) {
-                if ($entity instanceof Schema) {
-                    SchemaRegistry::add($entity);
-                }
-            }
         }
 
         $json = SchemaRegistry::getJSON();
