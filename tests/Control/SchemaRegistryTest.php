@@ -52,10 +52,10 @@ class SchemaRegistryTest extends SapphireTest
                     '@id' => 'https://example.com/#inner',
                     '@type' => 'Thing',
                 ]);
-                throw new \\RuntimeException('Simulated collection failure');
+                throw new \RuntimeException('Simulated collection failure');
             });
             $this->fail('Expected collection exception');
-        } catch (\\RuntimeException $exception) {
+        } catch (\RuntimeException $exception) {
             $this->assertSame('Simulated collection failure', $exception->getMessage());
         }
 
