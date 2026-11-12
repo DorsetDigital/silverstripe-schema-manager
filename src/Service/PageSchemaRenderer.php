@@ -26,7 +26,7 @@ final class PageSchemaRenderer
 
         // Resolve the published record, never an unpublished URL supplied by
         // a caller operating in Draft context.
-        $published = Versioned::get_by_stage(SiteTree::class, Versioned::LIVE, $page->ID);
+        $published = Versioned::get_by_stage(SiteTree::class, Versioned::LIVE)->byID($page->ID);
         if (!$published || !$published->exists()) {
             throw new \InvalidArgumentException('The page is not published.');
         }
