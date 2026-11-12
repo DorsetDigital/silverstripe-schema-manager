@@ -230,6 +230,27 @@ class SchemaRegistry
         );
     }
 
+    /**
+     * Run a separate collection without losing a graph currently being assembled.
+     *
+     * The nested collection uses the existing static registry API so integrations
+     * do not need to change how they register entities.
+     */
+    public static function withIsolatedRegistry(callable $callback): mixed
+    {
+        $previousEntities = self::$entities;
+        $previousSchemas = self::$schemas;
+
+        self::flush();
+
+        try {
+            return $callback();
+        } finally {
+            self::$entities = $previousEntities;
+            self::$schemas = $previousSchemas;
+        }
+    }
+
     public static function flush(): void
     {
         self::$entities = [];
