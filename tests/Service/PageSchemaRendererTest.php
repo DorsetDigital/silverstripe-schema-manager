@@ -5,11 +5,120 @@ namespace DorsetDigital\SchemaManager\Tests\Service;
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use DorsetDigital\SchemaManager\Service\PageSchemaRenderer;
+use DorsetDigital\SchemaManager\Middleware\SchemaResponseMiddleware;
+use DorsetDigital\SchemaManager\Tests\Service\Fixture\PageSchemaContributionExtension;
+use SilverStripe\Control\Director;
+use SilverStripe\Control\HTTPRequestBuilder;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
 
 class PageSchemaRendererTest extends SapphireTest
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        SiteTree::add_extension(PageSchemaContributionExtension::class);
+    }
+
+    public function testExtensionContributionsAndFaqAggregation(): void
+    {
+        $page = SiteTree::create([
+            'Title' => 'Integration fixture',
+            'URLSegment' => 'schema-contribution-test',
+        ]);
+        $page->write();
+        $page->publishSingle();
+
+        $data = $this->decodePage($page);
+        $byType = [];
+        foreach ($data['@graph'] as $entity) {
+            $byType[$entity['@type']][] = $entity;
+        }
+
+        $this->assertCount(1, $byType['Service']);
+        $this->assertSame('Fixture consulting service', $byType['Service'][0]['name']);
+        $this->assertCount(1, $byType['Thing']);
+        $this->assertSame('Extension-added entity', $byType['Thing'][0]['name']);
+        $this->assertCount(1, $byType['FAQPage']);
+        $this->assertSame(
+            ['First question?', 'Second question?'],
+            array_column($byType['FAQPage'][0]['mainEntity'], 'name')
+        );
+        $this->assertSame(
+            SchemaIDs::forPageURL($page->AbsoluteLink(), 'faq'),
+            $byType['FAQPage'][0]['@id']
+        );
+        $this->assertSame(
+            ['@id' => $byType['Service'][0]['@id']],
+            $byType['WebPage'][0]['mainEntity']
+        );
+
+        // Repeated generation must not duplicate questions or leak entities.
+        $again = $this->decodePage($page);
+        $this->assertEqualsCanonicalizing($data['@graph'], $again['@graph']);
+
+        $other = SiteTree::create([
+            'Title' => 'Unrelated page',
+            'URLSegment' => 'schema-unrelated-test',
+        ]);
+        $other->write();
+        $other->publishSingle();
+        $otherTypes = array_column($this->decodePage($other)['@graph'], '@type');
+        $this->assertNotContains('FAQPage', $otherTypes);
+        $this->assertNotContains('Service', $otherTypes);
+        $this->assertNotContains('Thing', $otherTypes);
+    }
+
+    public function testPublishedGraphMatchesNormalHtmlResponse(): void
+    {
+        $page = SiteTree::create([
+            'Title' => 'HTML parity fixture',
+            'URLSegment' => 'schema-contribution-test',
+            'SchemaAnnotationType' => 'service',
+            'SchemaAnnotationValues' => json_encode(['serviceType' => 'Parity check']),
+        ]);
+        $page->write();
+        $page->publishSingle();
+
+        $parts = parse_url($page->AbsoluteLink());
+        $request = HTTPRequestBuilder::createFromVariables([
+            '_SERVER' => [
+                'REQUEST_URI' => $parts['path'] ?? '/',
+                'REQUEST_METHOD' => 'GET',
+                'HTTP_HOST' => $parts['host'],
+                'HTTPS' => ($parts['scheme'] ?? '') === 'https' ? 'on' : 'off',
+                'QUERY_STRING' => '',
+            ],
+            '_GET' => [],
+            '_POST' => [],
+        ], '');
+
+        // Exercise the actual HTML middleware with a normal Silverstripe page
+        // response, rather than assembling a second graph in the test itself.
+        $response = (new SchemaResponseMiddleware())->process(
+            $request,
+            static function () use ($request) {
+                $response = Director::singleton()->handleRequest($request);
+                $response->addHeader('Content-Type', 'text/html');
+                return $response;
+            }
+        );
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame(1, substr_count($response->getBody(), 'id="schema-manager-jsonld"'));
+        $this->assertSame(1, preg_match(
+            '~<script\\b[^>]*id="schema-manager-jsonld"[^>]*>(.*?)</script>~s',
+            $response->getBody(),
+            $matches
+        ));
+
+        $htmlGraph = json_decode($matches[1], true, 512, JSON_THROW_ON_ERROR);
+        $apiGraph = $this->decodePage($page);
+
+        $this->assertSame($htmlGraph['@context'], $apiGraph['@context']);
+        $this->assertEqualsCanonicalizing($htmlGraph['@graph'], $apiGraph['@graph']);
+    }
+
     protected function tearDown(): void
     {
         SchemaRegistry::flush();
