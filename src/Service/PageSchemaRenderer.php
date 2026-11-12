@@ -4,12 +4,11 @@ namespace DorsetDigital\SchemaManager\Service;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPApplication;
 use SilverStripe\Control\HTTPRequestBuilder;
 use SilverStripe\Core\CoreKernel;
 use SilverStripe\ORM\FieldType\DBDatetime;
-use SilverStripe\ORM\Versioning\Versioned;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * Experimental page-graph collection through the normal Silverstripe request
