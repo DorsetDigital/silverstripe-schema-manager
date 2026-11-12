@@ -4,9 +4,8 @@ namespace DorsetDigital\SchemaManager\Service;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Control\HTTPApplication;
+use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequestBuilder;
-use SilverStripe\Core\CoreKernel;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Versioned\Versioned;
 
@@ -66,7 +65,11 @@ final class PageSchemaRenderer
                     '_POST' => [],
                 ], '');
 
-                $response = (new HTTPApplication(new CoreKernel(BASE_PATH)))->handle($request);
+                // The application is already booted. A second CoreKernel would push
+                // global manifests and PHP handlers without restoring them,
+                // corrupting subsequent page generations in the same process.
+                // Director performs the normal controller routing and middleware.
+                $response = Director::singleton()->handleRequest($request);
 
                 if ($response->getStatusCode() !== 200) {
                     throw new \RuntimeException(sprintf(
