@@ -3,6 +3,7 @@
 namespace DorsetDigital\SchemaManager\Tests\Service;
 
 use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use DorsetDigital\SchemaManager\Service\PageSchemaRenderer;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Dev\SapphireTest;
@@ -84,15 +85,15 @@ class PageSchemaRendererTest extends SapphireTest
         $firstIDs = array_column($first['@graph'], '@id');
         $secondIDs = array_column($second['@graph'], '@id');
         $this->assertContains(
-            \\DorsetDigital\\SchemaManager\\Control\\SchemaIDs::webPage($pageA),
+            SchemaIDs::webPage($pageA),
             $firstIDs
         );
         $this->assertNotContains(
-            \\DorsetDigital\\SchemaManager\\Control\\SchemaIDs::webPage($pageA),
+            SchemaIDs::webPage($pageA),
             $secondIDs
         );
         $this->assertContains(
-            \\DorsetDigital\\SchemaManager\\Control\\SchemaIDs::webPage($pageB),
+            SchemaIDs::webPage($pageB),
             $secondIDs
         );
     }
