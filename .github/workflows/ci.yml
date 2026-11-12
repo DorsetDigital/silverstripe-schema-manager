@@ -35,8 +35,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - php-version: '8.1'
-            cms-version: '^5'
           - php-version: '8.3'
             cms-version: '^5'
           - php-version: '8.3'
