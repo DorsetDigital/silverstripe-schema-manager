@@ -68,7 +68,7 @@ class SchemaControllerExtension extends Extension
     private function buildOrganisation(SiteConfig $config): OrganisationSchema
     {
         $schema = OrganisationSchema::create('site', $config->SchemaOrganisationName ?: $config->Title)
-            ->setURL(rtrim(Director::absoluteBaseURL(), '/') . '/');
+            ->setURL(SchemaIDs::publicURL(Director::absoluteBaseURL()));
 
         // Automatic site entities retain their established public IDs.
         $schema->update(['@id' => SchemaIDs::organisation()]);
@@ -78,7 +78,7 @@ class SchemaControllerExtension extends Extension
         if ($config->SchemaOrganisationEmail) $schema->setEmail($config->SchemaOrganisationEmail);
 
         $logo = $config->SchemaOrganisationLogo();
-        if ($logo && $logo->exists()) $schema->setLogo($logo->getAbsoluteURL());
+        if ($logo && $logo->exists()) $schema->setLogo(SchemaIDs::publicURL($logo->getAbsoluteURL()));
 
         $address = array_filter([
             'streetAddress' => $config->SchemaOrganisationStreetAddress,
@@ -99,7 +99,7 @@ class SchemaControllerExtension extends Extension
     private function buildWebsite(SiteConfig $config): WebsiteSchema
     {
         $schema = WebsiteSchema::create('site', $config->Title)
-            ->setURL(rtrim(Director::absoluteBaseURL(), '/') . '/');
+            ->setURL(SchemaIDs::publicURL(Director::absoluteBaseURL()));
         $schema->update(['@id' => SchemaIDs::website()]);
 
         if (SchemaManager::config()->get('automatic_organisation_schema')) {
@@ -112,7 +112,7 @@ class SchemaControllerExtension extends Extension
     private function buildWebPage(SiteTree $page): WebPageSchema
     {
         $schema = WebPageSchema::create((string) $page->ID, $page->Title)
-            ->setURL(rtrim($page->AbsoluteLink(), '/') . '/');
+            ->setURL(rtrim(SchemaIDs::publicURL($page->AbsoluteLink()), '/') . '/');
 
         if (SchemaManager::config()->get('automatic_website_schema')) {
             $schema->setIsPartOf(SchemaIDs::website());
@@ -134,7 +134,7 @@ class SchemaControllerExtension extends Extension
         $schema = BreadcrumbListSchema::create((string) $page->ID);
         foreach ($items as $item) {
             if ($item instanceof SiteTree) {
-                $schema->addItem($item->MenuTitle ?: $item->Title, $item->AbsoluteLink());
+                $schema->addItem($item->MenuTitle ?: $item->Title, SchemaIDs::publicURL($item->AbsoluteLink()));
             }
         }
 
