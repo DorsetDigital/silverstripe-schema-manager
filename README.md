@@ -63,3 +63,28 @@ Beyond the automatically generated entities, the module provides builders and in
 ## License
 
 BSD 3-Clause License.
+
+## Public site URL for headless builds
+
+Schema Manager normally uses Silverstripe's own absolute URL for generated
+schema IDs, website/page links, breadcrumbs and content annotations.
+
+For headless/static sites served from a different domain, set
+`PUBLIC_SITE_URL` in the **Silverstripe application's environment**:
+
+```dotenv
+PUBLIC_SITE_URL=https://www.example.com
+```
+
+Schema Manager reads this value directly through Silverstripe's
+`Environment::getEnv()`. When set, internally generated site/page URLs and
+schema IDs use the specified public origin. When unset, existing Silverstripe
+URL behaviour is unchanged. External third-party links are not rewritten.
+
+The value must be an HTTP(S) origin (optionally ending in `/`), without
+a path, query or fragment. No YAML or Injector configuration is required.
+
+This controls URL generation, **not file publication**. If a schema image
+such as an organisation logo is hosted only in Silverstripe's asset storage,
+ensure it is also available at the resulting public URL, or handle that asset
+separately in the site build.
