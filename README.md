@@ -70,10 +70,10 @@ Schema Manager normally uses Silverstripe's own absolute URL for generated
 schema IDs, website/page links, breadcrumbs and content annotations.
 
 For headless/static sites served from a different domain, set
-`PUBLIC_SITE_URL` in the **Silverstripe application's environment**:
+`SCHEMA_PUBLIC_URL` in the **Silverstripe application's environment**:
 
 ```dotenv
-PUBLIC_SITE_URL=https://www.example.com
+SCHEMA_PUBLIC_URL=https://www.example.com
 ```
 
 Schema Manager reads this value directly through Silverstripe's
