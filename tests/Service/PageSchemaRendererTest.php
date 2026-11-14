@@ -209,12 +209,12 @@ class PageSchemaRendererTest extends SapphireTest
 
     public function testPublicSiteUrlOverridesPublishedGraphURLs(): void
     {
-        $previous = getenv('PUBLIC_SITE_URL');
-        $previousEnv = $_ENV['PUBLIC_SITE_URL'] ?? null;
-        $previousServer = $_SERVER['PUBLIC_SITE_URL'] ?? null;
-        putenv('PUBLIC_SITE_URL=https://public.example.test');
-        $_ENV['PUBLIC_SITE_URL'] = 'https://public.example.test';
-        $_SERVER['PUBLIC_SITE_URL'] = 'https://public.example.test';
+        $previous = getenv('SCHEMA_PUBLIC_URL');
+        $previousEnv = $_ENV['SCHEMA_PUBLIC_URL'] ?? null;
+        $previousServer = $_SERVER['SCHEMA_PUBLIC_URL'] ?? null;
+        putenv('SCHEMA_PUBLIC_URL=https://public.example.test');
+        $_ENV['SCHEMA_PUBLIC_URL'] = 'https://public.example.test';
+        $_SERVER['SCHEMA_PUBLIC_URL'] = 'https://public.example.test';
 
         try {
             $page = SiteTree::create([
@@ -256,19 +256,19 @@ class PageSchemaRendererTest extends SapphireTest
             );
         } finally {
             if ($previous === false) {
-                putenv('PUBLIC_SITE_URL');
+                putenv('SCHEMA_PUBLIC_URL');
             } else {
-                putenv('PUBLIC_SITE_URL=' . $previous);
+                putenv('SCHEMA_PUBLIC_URL=' . $previous);
             }
             if ($previousEnv === null) {
-                unset($_ENV['PUBLIC_SITE_URL']);
+                unset($_ENV['SCHEMA_PUBLIC_URL']);
             } else {
-                $_ENV['PUBLIC_SITE_URL'] = $previousEnv;
+                $_ENV['SCHEMA_PUBLIC_URL'] = $previousEnv;
             }
             if ($previousServer === null) {
-                unset($_SERVER['PUBLIC_SITE_URL']);
+                unset($_SERVER['SCHEMA_PUBLIC_URL']);
             } else {
-                $_SERVER['PUBLIC_SITE_URL'] = $previousServer;
+                $_SERVER['SCHEMA_PUBLIC_URL'] = $previousServer;
             }
         }
     }
