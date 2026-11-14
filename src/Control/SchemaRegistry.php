@@ -115,7 +115,7 @@ class SchemaRegistry
                 '@type' => 'ListItem',
                 'position' => $position++,
                 'name' => $item->MenuTitle ?: $item->Title,
-                'item' => $item->AbsoluteLink(),
+                'item' => SchemaIDs::publicURL($item->AbsoluteLink()),
             ];
         }
 
@@ -123,7 +123,7 @@ class SchemaRegistry
             return;
         }
 
-        $id = rtrim($page->AbsoluteLink(), '/') . '/#breadcrumb';
+        $id = rtrim(SchemaIDs::publicURL($page->AbsoluteLink()), '/') . '/#breadcrumb';
 
         self::addEntity($id, [
             '@type' => 'BreadcrumbList',
