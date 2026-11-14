@@ -22,7 +22,7 @@ final class FAQPageHelper
             }
         }
 
-        $pageURL = rtrim($pageURL, '/') . '/';
+        $pageURL = rtrim(SchemaIDs::publicURL($pageURL), '/') . '/';
         $id = SchemaIDs::forPageURL($pageURL, 'faq');
         $schema = FAQPageSchema::create('page-' . substr(sha1($pageURL), 0, 16))
             ->setIsPartOfPage($pageURL)
