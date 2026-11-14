@@ -207,6 +207,72 @@ class PageSchemaRendererTest extends SapphireTest
         );
     }
 
+    public function testPublicSiteUrlOverridesPublishedGraphURLs(): void
+    {
+        $previous = getenv('PUBLIC_SITE_URL');
+        $previousEnv = $_ENV['PUBLIC_SITE_URL'] ?? null;
+        $previousServer = $_SERVER['PUBLIC_SITE_URL'] ?? null;
+        putenv('PUBLIC_SITE_URL=https://public.example.test');
+        $_ENV['PUBLIC_SITE_URL'] = 'https://public.example.test';
+        $_SERVER['PUBLIC_SITE_URL'] = 'https://public.example.test';
+
+        try {
+            $page = SiteTree::create([
+                'Title' => 'Public URL fixture',
+                'URLSegment' => 'schema-public-url-test',
+            ]);
+            $page->write();
+            $page->publishSingle();
+
+            $graph = $this->decodePage($page)['@graph'];
+            $types = [];
+            foreach ($graph as $entity) {
+                $types[$entity['@type']] = $entity;
+            }
+
+            $this->assertSame('https://public.example.test/#organisation', $types['Organization']['@id']);
+            $this->assertSame('https://public.example.test/', $types['Organization']['url']);
+            $this->assertSame('https://public.example.test/#website', $types['WebSite']['@id']);
+            $this->assertSame('https://public.example.test/', $types['WebSite']['url']);
+            $this->assertSame(
+                'https://public.example.test/schema-public-url-test/#webpage',
+                $types['WebPage']['@id']
+            );
+            $this->assertSame(
+                'https://public.example.test/schema-public-url-test/',
+                $types['WebPage']['url']
+            );
+            $this->assertSame(
+                ['@id' => 'https://public.example.test/#website'],
+                $types['WebPage']['isPartOf']
+            );
+            $this->assertSame(
+                'https://public.example.test/schema-public-url-test/#breadcrumb',
+                SchemaIDs::breadcrumb($page)
+            );
+            $this->assertSame(
+                'https://external.example.test/external',
+                SchemaIDs::publicURL('https://external.example.test/external')
+            );
+        } finally {
+            if ($previous === false) {
+                putenv('PUBLIC_SITE_URL');
+            } else {
+                putenv('PUBLIC_SITE_URL=' . $previous);
+            }
+            if ($previousEnv === null) {
+                unset($_ENV['PUBLIC_SITE_URL']);
+            } else {
+                $_ENV['PUBLIC_SITE_URL'] = $previousEnv;
+            }
+            if ($previousServer === null) {
+                unset($_SERVER['PUBLIC_SITE_URL']);
+            } else {
+                $_SERVER['PUBLIC_SITE_URL'] = $previousServer;
+            }
+        }
+    }
+
     private function decodePage(SiteTree $page, ?PageSchemaRenderer $renderer = null): array
     {
         $json = ($renderer ?? new PageSchemaRenderer())->forPublishedPage($page);
