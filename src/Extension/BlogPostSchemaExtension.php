@@ -13,7 +13,7 @@ class BlogPostSchemaExtension extends Extension
     public function updateSchemaManagerEntities(array &$entities): void
     {
         $post = $this->owner;
-        $url = rtrim($post->AbsoluteLink(), '/') . '/';
+        $url = rtrim(SchemaIDs::publicURL($post->AbsoluteLink()), '/') . '/';
         $description = null;
 
         if ($post->hasField('Summary') && $post->Summary) {
@@ -36,7 +36,7 @@ class BlogPostSchemaExtension extends Extension
 
         if ($post->hasMethod('FeaturedImage')) {
             $image = $post->FeaturedImage();
-            if ($image && $image->exists()) $schema->setImage($image->getAbsoluteURL());
+            if ($image && $image->exists()) $schema->setImage(SchemaIDs::publicURL($image->getAbsoluteURL()));
         }
 
         if (SchemaManager::config()->get('automatic_organisation_schema')) {
