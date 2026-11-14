@@ -130,7 +130,7 @@ final class SchemaIDs
             || !empty($parts['fragment'])
             || (!empty($parts['path']) && $parts['path'] !== '/')
         ) {
-            throw new \\InvalidArgumentException('PUBLIC_SITE_URL must be an absolute HTTP(S) site origin.');
+            throw new \InvalidArgumentException('PUBLIC_SITE_URL must be an absolute HTTP(S) site origin.');
         }
 
         return rtrim($url, '/');
