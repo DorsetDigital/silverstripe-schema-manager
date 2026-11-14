@@ -4,6 +4,7 @@ namespace DorsetDigital\SchemaManager\Control;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Environment;
 
 /**
  * Stable identifiers shared by the schema builders and application integrations.
@@ -64,7 +65,7 @@ final class SchemaIDs
 
     public static function forPageURL(string $url, string $fragment): string
     {
-        return rtrim($url, '/') . '/#' . ltrim($fragment, '#');
+        return rtrim(self::publicURL($url), '/') . '/#' . ltrim($fragment, '#');
     }
 
     public static function ref(string $id): array
@@ -72,8 +73,66 @@ final class SchemaIDs
         return ['@id' => $id];
     }
 
+    /**
+     * Convert a URL belonging to this Silverstripe site to the public website
+     * origin, when PUBLIC_SITE_URL is configured. Third-party URLs are retained.
+     */
+    public static function publicURL(string $url): string
+    {
+        $override = Environment::getEnv('PUBLIC_SITE_URL');
+        if (!is_string($override) || trim($override) === '') {
+            return $url;
+        }
+
+        $public = self::validatedPublicBaseURL($override);
+        $internal = parse_url(Director::absoluteBaseURL());
+        $source = parse_url($url);
+
+        if (!is_array($internal) || !is_array($source)) {
+            return $url;
+        }
+
+        // Absolute external URLs must never be rewritten.
+        if (isset($source['host']) && (
+            strcasecmp($source['host'], $internal['host'] ?? '') !== 0
+            || ($source['port'] ?? null) !== ($internal['port'] ?? null)
+        )) {
+            return $url;
+        }
+
+        // Keep the path, query and fragment, replacing only the site origin.
+        $path = $source['path'] ?? '';
+        $suffix = (isset($source['query']) ? '?' . $source['query'] : '')
+            . (isset($source['fragment']) ? '#' . $source['fragment'] : '');
+
+        return $public . '/' . ltrim($path, '/') . $suffix;
+    }
+
     private static function baseURL(): string
     {
+        $override = Environment::getEnv('PUBLIC_SITE_URL');
+        if (is_string($override) && trim($override) !== '') {
+            return self::validatedPublicBaseURL($override) . '/';
+        }
+
         return rtrim(Director::absoluteBaseURL(), '/') . '/';
+    }
+
+    private static function validatedPublicBaseURL(string $url): string
+    {
+        $url = trim($url);
+        $parts = parse_url($url);
+        if (!is_array($parts)
+            || !in_array($parts['scheme'] ?? null, ['http', 'https'], true)
+            || empty($parts['host'])
+            || isset($parts['user']) || isset($parts['pass'])
+            || !empty($parts['query'])
+            || !empty($parts['fragment'])
+            || (!empty($parts['path']) && $parts['path'] !== '/')
+        ) {
+            throw new \\InvalidArgumentException('PUBLIC_SITE_URL must be an absolute HTTP(S) site origin.');
+        }
+
+        return rtrim($url, '/');
     }
 }
