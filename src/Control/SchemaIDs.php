@@ -75,11 +75,11 @@ final class SchemaIDs
 
     /**
      * Convert a URL belonging to this Silverstripe site to the public website
-     * origin, when PUBLIC_SITE_URL is configured. Third-party URLs are retained.
+     * origin, when SCHEMA_PUBLIC_URL is configured. Third-party URLs are retained.
      */
     public static function publicURL(string $url): string
     {
-        $override = Environment::getEnv('PUBLIC_SITE_URL');
+        $override = Environment::getEnv('SCHEMA_PUBLIC_URL');
         if (!is_string($override) || trim($override) === '') {
             return $url;
         }
@@ -110,7 +110,7 @@ final class SchemaIDs
 
     private static function baseURL(): string
     {
-        $override = Environment::getEnv('PUBLIC_SITE_URL');
+        $override = Environment::getEnv('SCHEMA_PUBLIC_URL');
         if (is_string($override) && trim($override) !== '') {
             return self::validatedPublicBaseURL($override) . '/';
         }
@@ -130,7 +130,7 @@ final class SchemaIDs
             || !empty($parts['fragment'])
             || (!empty($parts['path']) && $parts['path'] !== '/')
         ) {
-            throw new \InvalidArgumentException('PUBLIC_SITE_URL must be an absolute HTTP(S) site origin.');
+            throw new \InvalidArgumentException('SCHEMA_PUBLIC_URL must be an absolute HTTP(S) site origin.');
         }
 
         return rtrim($url, '/');
