@@ -17,6 +17,53 @@ class SchemaRegistryTest extends SapphireTest
         parent::tearDown();
     }
 
+    public function testIsolatedRegistryDoesNotLeakBetweenPages(): void
+    {
+        SchemaRegistry::addEntity('https://example.com/#outer', [
+            '@id' => 'https://example.com/#outer',
+            '@type' => 'Thing',
+        ]);
+
+        $inner = SchemaRegistry::withIsolatedRegistry(static function (): array {
+            SchemaRegistry::addEntity('https://example.com/page-a/#inner', [
+                '@id' => 'https://example.com/page-a/#inner',
+                '@type' => 'WebPage',
+            ]);
+            return SchemaRegistry::getGraph();
+        });
+
+        $this->assertCount(1, $inner);
+        $this->assertSame('https://example.com/page-a/#inner', $inner[0]['@id']);
+        $outer = SchemaRegistry::getGraph();
+        $this->assertCount(1, $outer);
+        $this->assertSame('https://example.com/#outer', $outer[0]['@id']);
+    }
+
+    public function testIsolatedRegistryRestoresStateAfterException(): void
+    {
+        SchemaRegistry::addEntity('https://example.com/#outer', [
+            '@id' => 'https://example.com/#outer',
+            '@type' => 'Thing',
+        ]);
+
+        try {
+            SchemaRegistry::withIsolatedRegistry(static function (): void {
+                SchemaRegistry::addEntity('https://example.com/#inner', [
+                    '@id' => 'https://example.com/#inner',
+                    '@type' => 'Thing',
+                ]);
+                throw new \RuntimeException('Simulated collection failure');
+            });
+            $this->fail('Expected collection exception');
+        } catch (\RuntimeException $exception) {
+            $this->assertSame('Simulated collection failure', $exception->getMessage());
+        }
+
+        $graph = SchemaRegistry::getGraph();
+        $this->assertCount(1, $graph);
+        $this->assertSame('https://example.com/#outer', $graph[0]['@id']);
+    }
+
     public function testEntityCanBeAdded(): void
     {
         SchemaRegistry::addEntity('https://example.com/#thing', [

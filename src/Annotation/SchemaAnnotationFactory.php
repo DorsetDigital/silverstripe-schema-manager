@@ -4,6 +4,7 @@ namespace DorsetDigital\SchemaManager\Annotation;
 
 use DorsetDigital\SchemaManager\Model\Schema\Schema;
 use SilverStripe\CMS\Model\SiteTree;
+use DorsetDigital\SchemaManager\Control\SchemaIDs;
 use SilverStripe\Core\Injector\Injector;
 
 class SchemaAnnotationFactory
@@ -24,7 +25,7 @@ class SchemaAnnotationFactory
 
         $schema = $handler->build($page, $values, $definition);
         if ($schema && !isset($schema->toArray()['mainEntityOfPage'])) {
-            $schema->setMainEntityOfPage($page->AbsoluteLink());
+            $schema->setMainEntityOfPage(SchemaIDs::publicURL($page->AbsoluteLink()));
         }
 
         return $schema;

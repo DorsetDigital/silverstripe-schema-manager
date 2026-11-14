@@ -115,7 +115,7 @@ class SchemaRegistry
                 '@type' => 'ListItem',
                 'position' => $position++,
                 'name' => $item->MenuTitle ?: $item->Title,
-                'item' => $item->AbsoluteLink(),
+                'item' => SchemaIDs::publicURL($item->AbsoluteLink()),
             ];
         }
 
@@ -123,7 +123,7 @@ class SchemaRegistry
             return;
         }
 
-        $id = rtrim($page->AbsoluteLink(), '/') . '/#breadcrumb';
+        $id = rtrim(SchemaIDs::publicURL($page->AbsoluteLink()), '/') . '/#breadcrumb';
 
         self::addEntity($id, [
             '@type' => 'BreadcrumbList',
@@ -228,6 +228,27 @@ class SchemaRegistry
             self::getSchema(),
             JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
         );
+    }
+
+    /**
+     * Run a separate collection without losing a graph currently being assembled.
+     *
+     * The nested collection uses the existing static registry API so integrations
+     * do not need to change how they register entities.
+     */
+    public static function withIsolatedRegistry(callable $callback): mixed
+    {
+        $previousEntities = self::$entities;
+        $previousSchemas = self::$schemas;
+
+        self::flush();
+
+        try {
+            return $callback();
+        } finally {
+            self::$entities = $previousEntities;
+            self::$schemas = $previousSchemas;
+        }
     }
 
     public static function flush(): void

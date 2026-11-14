@@ -69,7 +69,7 @@ class BlogIndexSchemaExtension extends Extension
 
         foreach ($posts as $post) {
             $id = (int) ($post->ID ?? 0);
-            $url = $post->AbsoluteLink();
+            $url = SchemaIDs::publicURL($post->AbsoluteLink());
 
             if ($id <= 0 || !is_string($url) || $url === '') {
                 continue;

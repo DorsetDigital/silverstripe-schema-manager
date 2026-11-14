@@ -17,7 +17,7 @@ class GenericAnnotationHandler implements SchemaAnnotationHandler
             throw new \InvalidArgumentException('Annotation definition requires a key and schema_type.');
         }
 
-        $url = rtrim($page->AbsoluteLink(), '/') . '/';
+        $url = rtrim(SchemaIDs::publicURL($page->AbsoluteLink()), '/') . '/';
         $data = [
             '@type' => $type,
             '@id' => SchemaIDs::forPageURL($url, 'annotation-' . strtolower(preg_replace('/[^a-zA-Z0-9-]/', '-', $key))),
