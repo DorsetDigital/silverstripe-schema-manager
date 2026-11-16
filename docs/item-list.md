@@ -25,10 +25,12 @@ foreach ($posts as $post) {
     );
 }
 
-SchemaRegistry::add($list->setIsPartOfPage($element->getPage()->AbsoluteLink()));
+SchemaRegistry::add($list);
 ```
 
 The list uses `ListItem` entries with automatic 1-based positions and `numberOfItems`. Each entry's `item` refers to the existing entity by `@id`; `name` and `url` can accompany the reference. Referencing an ID does not register or reproduce the full entity on the listing page.
+
+`ItemList` is not a `CreativeWork`, so its `isPartOf` property is omitted during serialization even if `setIsPartOfPage()` is called. To make the list the primary content of a page, use `setMainEntityOfPage($pageURL)`; alternatively, a `CollectionPage` can reference the list by its `mainEntity` ID.
 
 For ordinary links without an existing schema entity, use `addItem($url, $name)`.
 
@@ -41,7 +43,7 @@ For ordinary links without an existing schema entity, use `addItem($url, $name)`
 | `addEntity(string $entityID, ?string $name = null, ?string $url = null)` | Append a reference to an existing entity |
 | `getEntityID()` | Get this list's stable ID |
 | `toArray()` | Get the JSON-LD entity data |
-| `setIsPartOfPage(string $pageURL)` | Associate the list with its containing page |
+| `setIsPartOfPage(string $pageURL)` | Inherited method; `isPartOf` is omitted from `ItemList` output |
 | `setMainEntityOfPage(string $pageURL)` | Make the list the page's main entity |
 | `isMainEntityOfPage(string $pageURL)` | Check the main entity relationship |
 | `update(array $data)` | Merge additional schema properties |

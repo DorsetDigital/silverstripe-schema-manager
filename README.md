@@ -26,6 +26,15 @@ These entities are linked together using stable identifiers and rendered as a si
 
 Automatic organisation, website, webpage and breadcrumb output can each be enabled or disabled independently. See [Site schema](docs/site-schema.md) and [Breadcrumbs](docs/breadcrumbs.md).
 
+## Pages and their content
+
+The automatic `WebPage` describes **the page being viewed**. Other entities describe **what is on that page**.
+
+- **Adding content**, such as a `Product`, `Service` or `BlogPosting`, normally means keeping the `WebPage` and linking its main content to it.
+- **Using a more specific page type**, such as `CollectionPage`, means changing the existing page entity's type while **preserving its `@id`**. It does not mean creating a second, unrelated page entity.
+
+Most integrations only need the first approach. See [WebPage and page types](docs/web-page.md) for examples and [Entity relationships](docs/schema-entities.md#page-entities-and-content-entities) for guidance.
+
 ## Supported schema types
 
 Beyond the automatically generated entities, the module provides builders and integrations for:
