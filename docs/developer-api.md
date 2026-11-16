@@ -43,13 +43,13 @@ In this example, `forPageURL()` creates the **new Service entity's ID**. The `pr
 
 That extra `ref()` call is only needed here because we're constructing a raw schema array. Typed builders such as `ServiceSchema::setProvider()` accept the string directly and create the reference for you. **Neither helper registers an entity**; they only generate IDs or format references.
 
-See [Working with schema entities](docs/schema-entities.md) for more on registering custom entities and linking them together.
+See [Working with schema entities](schema-entities.md) for more on registering custom entities and linking them together.
 
 ### Entity fields in CMS page annotations
 
 The CMS can also link schema entities without custom PHP. For example, an Event annotation can specify an organiser (Organization or Person) and a location, while a Service annotation can specify its provider. Each field can refer to an existing entity or describe one directly, depending on the project configuration.
 
-See [Page annotations](docs/page-annotations.md) for the available options and how to configure them.
+See [Page annotations](page-annotations.md) for the available options and how to configure them.
 
 
 ## Optional Silverstripe Blog integration
@@ -69,6 +69,53 @@ SilverStripe\Blog\Model\BlogPost:
 
 Run `vendor/bin/sake dev/build flush=1` after changing the configuration. Blog posts will then contribute `BlogPosting` schema with their headline, publication and modification dates, description and featured image where available. See [BlogPosting](docs/blog-posting.md) for details.
 
+
+## Choosing a page type or adding content
+
+**Usually, add an entity; don't replace `WebPage`.** The two cases are:
+
+### A product is the main content of a page
+
+The page is still a `WebPage`. Register a separate `Product` and identify it as the primary content:
+
+```php
+use DorsetDigital\SchemaManager\Control\SchemaRegistry;
+use DorsetDigital\SchemaManager\Model\Schema\ProductSchema;
+
+SchemaRegistry::add(
+    ProductSchema::create('product-' . $product->ID, $product->Title)
+        ->setMainEntityOfPage($page->AbsoluteLink())
+);
+```
+
+Schema Manager keeps the existing `WebPage` and can link it to the `Product` through `mainEntity`. The `Product` itself has its own `@id`. Register the entity during the request before the graph is rendered.
+
+### A listings page is a CollectionPage
+
+Here `CollectionPage` describes **the page itself**. When working in the `updateSchemaManagerEntities(array &$entities)` page hook, replace the existing `WebPageSchema` object **in that array**. Its `@id`, title, URL and metadata are retained by `fromWebPage()`:
+
+```php
+use DorsetDigital\SchemaManager\Model\Schema\PropertyCollectionSchema;
+use DorsetDigital\SchemaManager\Model\Schema\WebPageSchema;
+
+public function updateSchemaManagerEntities(array &$entities): void
+{
+    foreach ($entities as $index => $entity) {
+        if ($entity instanceof WebPageSchema) {
+            $entities[$index] = PropertyCollectionSchema::fromWebPage(
+                $entity,
+                $itemList->getEntityID()
+            );
+            $entities[] = $itemList;
+            break;
+        }
+    }
+}
+```
+
+In this example, `$itemList` is an `ItemListSchema` prepared by your integration. The `PropertyCollectionSchema` builder is a specialised `CollectionPage` convenience builder; ordinary content integrations do not need it. This example applies to the **early page extension hook**, before Schema Manager registers the page entities. If your integration runs later from a controller action, use `SchemaRegistry::add()` for the finished entities, retaining the existing page `@id` where you are changing its type.
+
+See [Page entities and content entities](schema-entities.md#page-entities-and-content-entities) for the distinction, and [WebPage and page types](web-page.md) for the underlying page schema.
 
 ## Adding schema manually
 
